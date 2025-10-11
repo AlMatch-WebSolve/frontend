@@ -1,16 +1,115 @@
-# React + Vite
+## 🚀 우리 팀 Git 브랜치 협업 규칙 가이드
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+안녕하세요, 팀원 여러분\! 원활한 협업과 안정적인 프로젝트 관리를 위해 우리 팀의 Git 브랜치 사용 규칙을 공유합니다. 
+처음이신 분들도 따라 하기 쉽도록 만들었으니, 꼭 읽어보시고 함께 지켜주세요\! 😊
 
-Currently, two official plugins are available:
+### \#\# 1. 왜 이런 규칙이 필요한가요? (핵심 전략)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+우리 팀은 **`main`**과 \*\*`develop`\*\*이라는 두 개의 핵심 브랜치를 중심으로 작업합니다.
 
-## React Compiler
+  * **`main` 브랜치**: **실제 배포되는 가장 안정적인 버전**의 코드만 모아두는 곳입니다. 여기에 직접 코드를 수정하는 일은 절대 없습니다. (마치 '출시된 완성품' 상자와 같아요\!)
+  * **`develop` 브랜치**: **다음 버전을 위해 개발 중인 코드**를 모아두는 곳입니다. 새로운 기능들이 완성되면 이곳에 합쳐지게 됩니다. (마치 '조립 중인 반제품' 상자와 같아요\!)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+그리고 **`feature` 브랜치**는 각자 맡은 **개별 기능을 개발하는 개인 작업 공간**입니다. 다른 사람의 작업에 영향을 주지 않고 자유롭게 코드를 만들고 실험할 수 있죠. (마치 '개인 작업 책상'과 같아요\!)
 
-## Expanding the ESLint configuration
+**이 전략의 장점:**
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1.  **안정성**: `main` 브랜치는 언제나 정상 작동하는 버전이므로, 문제가 생겼을 때 안심하고 돌아갈 수 있습니다.
+2.  **동시 작업**: 여러 명의 팀원이 각자의 `feature` 브랜치에서 동시에 다른 기능을 개발해도 코드가 꼬이지 않습니다.
+3.  **코드 리뷰**: 기능 개발이 끝나면 `develop` 브랜치에 합치기 전, 코드를 함께 검토(리뷰)하고 품질을 높일 수 있습니다.
+
+-----
+
+### \#\# 2. 실제 작업 흐름 (Step-by-Step 가이드)
+
+이제 `로그인 UI 만들기` 기능을 개발한다고 가정하고, 처음부터 끝까지의 과정을 명령어로 알아볼게요. 아래 순서대로만 따라 하면 됩니다\!
+
+#### **1단계: 초기 설정 (프로젝트 시작 시 딱 한 번만\!)**
+
+가장 먼저 프로젝트를 내 컴퓨터로 복제(clone)해오고, `develop` 브랜치로 이동합니다.
+
+```bash
+# 1. 원격 저장소 코드를 내 컴퓨터로 복제하기
+git clone [우리 팀 GitHub 저장소 주소]
+
+# 2. 프로젝트 폴더로 이동하기
+cd [프로젝트 폴더명]
+
+# 3. develop 브랜치로 이동하기 (중요!)
+git switch develop
+```
+
+> **✨ Tip\!**
+> `git switch 브랜치명`은 해당 브랜치로 이동하는 명령어입니다. `git checkout 브랜치명`과 같은 역할을 합니다.
+
+#### **2단계: 내 기능 브랜치 만들고 작업 시작하기**
+
+`develop` 브랜치에서 내가 만들 기능의 브랜치를 새로 만듭니다. 브랜치 이름은 `feature/기능-요약` 형식으로 지어주세요.
+
+```bash
+# 1. 항상 최신 develop 브랜치 상태에서 시작 (중요!)
+git pull origin develop
+
+# 2. '로그인 UI' 기능 브랜치를 만들고 그 브랜치로 바로 이동
+# feature/login-ui 라는 이름의 브랜치가 생성됩니다.
+git switch -c feature/login-ui
+```
+
+이제 `feature/login-ui` 라는 나만의 작업 공간이 생겼습니다\! 여기서부터는 자유롭게 코드를 작성하고 저장(커밋)하면 됩니다.
+
+#### **3단계: 작업 내용 저장하고 GitHub에 올리기**
+
+코드를 어느 정도 완성했다면, 작업 내용을 저장(commit)하고 내 개인 브랜치를 GitHub에 올려서 팀원들에게 공유합니다.
+
+```bash
+# 1. 내가 수정한 모든 파일을 스테이징(Staging) 영역에 추가
+git add .
+
+# 2. 작업 내용을 설명하는 메시지와 함께 저장(커밋)
+git commit -m "feat: 로그인 페이지 UI 구성"
+# 커밋 메시지 규칙은 별도로 정해요! (예: feat, fix, docs 등)
+
+# 3. 내 작업 브랜치를 GitHub에 업로드(push)
+git push origin feature/login-ui
+```
+
+> **✨ Tip\!**
+> `push`는 내 컴퓨터의 작업 내용을 GitHub(원격 저장소)에 올리는 명령어입니다. 이제 다른 팀원들도 내가 만든 `feature/login-ui` 브랜치를 볼 수 있게 됩니다.
+
+#### **4단계: 작업 완료 후 Pull Request (PR) 보내기**
+
+기능 개발이 모두 끝났다면, 내가 만든 코드를 `develop` 브랜치에 합쳐달라고 요청하는 \*\*Pull Request(PR)\*\*를 생성해야 합니다.
+
+1.  GitHub 저장소 페이지로 이동합니다.
+
+2.  `feature/login-ui` 브랜치를 `push` 했다면, 노란색 배경의 알림창이 뜰 거예요. **[Compare & pull request]** 버튼을 클릭합니다.
+
+3.  PR 제목과 내용을 작성합니다. 내가 어떤 작업을 했는지 팀원들이 알기 쉽게 설명해주세요.
+
+4.  **합치는 방향을 꼭 확인**해야 합니다\!
+
+      * `base: develop` ← `compare: feature/login-ui` (✅ 올바른 방향)
+      * `base: main` ← `compare: feature/login-ui` (❌ 잘못된 방향\!)
+
+5.  **[Create pull request]** 버튼을 눌러 PR을 생성합니다.
+
+#### **5단계: 코드 리뷰 후 병합(Merge) 그리고 정리**
+
+PR이 생성되면 팀원들이 코드를 리뷰하고 의견을 남길 수 있습니다. 리뷰가 끝나고 승인(Approve)되면 코드를 `develop` 브랜치에 최종적으로 합칩니다(Merge).
+
+1.  PR 페이지에서 **[Merge pull request]** 버튼을 클릭합니다.
+2.  **(선택사항이지만 권장)** 이제 역할이 끝난 기능 브랜치를 삭제합니다.
+    ```bash
+    # GitHub에서 브랜치 삭제 (Merge 후 버튼 클릭)
+
+    # 내 컴퓨터에서도 브랜치 삭제
+    # 1. 다시 develop 브랜치로 돌아오기
+    git switch develop
+
+    # 2. 방금 작업 완료한 브랜치 삭제
+    git branch -d feature/login-ui
+    ```
+
+-----
+
+이 과정을 반복하며 다음 기능을 개발하면 됩니다. 처음에는 조금 복잡해 보일 수 있지만, 몇 번만 해보면 금방 익숙해질 거예요. 막히는 부분이 있다면 언제든지 편하게 질문해주세요\! 다 함께 멋진 프로젝트를 만들어봐요\! 🔥
