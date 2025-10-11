@@ -1,0 +1,24 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* 너비가 1920px보다 커지면 더 이상 늘어나지 않고 중앙에 위치 */
+  max-width: 1920px;
+  min-height: 100vh;
+  margin: 0 auto;
+
+  /* flexbox를 이용해 자식 요소(레이아웃)를 배치할 준비 */
+  display: flex;
+  flex-direction: column;
+
+  --font-family-main: 'Pretendard', sans-serif;
+}
+
+body {
+  font-family: var(--font-family-main);
+}

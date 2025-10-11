@@ -1,0 +1,50 @@
+/* 전체 컨테이너 스타일 */
+.landingContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #f2f9ff;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* 슬로건 텍스트 스타일 */
+.slogan {
+  font-size: 40px;
+  font-weight: normal;
+  color: black;
+  margin-bottom: 40px;
+}
+
+/* 시작하기 버튼 (Call To Action) 스타일 */
+.ctaButton {
+  /* 버튼 내부의 글자와 아이콘을 정중앙에 배치 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  /* 버튼 크기 및 디자인 */
+  width: 219px;
+  height: 74px;
+  padding: 9px 20px;
+  background-color: #3b465e;
+  border-radius: 50px;
+
+  /* Link 태그의 기본 스타일 제거 */
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s; /* 부드러운 호버 효과 */
+}
+
+.buttonLabel {
+  color: white;
+  font-size: 40px; /* 이미지와 맞게 폰트 크기 조정 */
+  font-weight: normal;
+}
+
+.buttonIcon {
+  width: 30px;
+  height: 30px;
+}
