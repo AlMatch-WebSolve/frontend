@@ -30,9 +30,11 @@
 
 ```bash
 # 1. 원격 저장소 코드를 내 컴퓨터로 복제하기
+# 예: git clone https://github.com/AlMatch-WebSolve/frontend.git
 git clone [우리 팀 GitHub 저장소 주소]
 
 # 2. 프로젝트 폴더로 이동하기
+# 예: cd websolve-frontend
 cd [프로젝트 폴더명]
 
 # 3. develop 브랜치로 이동하기 (중요!)
