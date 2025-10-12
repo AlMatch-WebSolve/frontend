@@ -1,32 +1,21 @@
-name: CD to Amplify (Webhook)
+name: Manual Amplify Deploy
 
 on:
-  push:
-    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: '배포할 환경 선택 (dev 또는 prod)'
+        required: true
+        default: 'dev'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install
-        run: npm ci
-
-      - name: Build
-        env:
-          # 브랜치별로 다른 .env를 사용한다면 여기서 주입 가능(필요 시)
-          REACT_APP_STAGE: ${{ github.ref_name }}
-        run: npm run build
-
-      - name: Trigger Amplify build (prod)
-        if: github.ref_name == 'main'
+      - name: Trigger Amplify Webhook
         run: |
-          curl -X POST "${{ secrets.AMPLIFY_WEBHOOK_PROD }}"
+          if [ "${{ github.event.inputs.target }}" == "dev" ]; then
+            curl -X POST "${{ secrets.AMPLIFY_WEBHOOK_DEV }}"
+          else
+            curl -X POST "${{ secrets.AMPLIFY_WEBHOOK_PROD }}"
+          fi
