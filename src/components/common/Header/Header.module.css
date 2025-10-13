@@ -1,0 +1,23 @@
+.header {
+  height: 60px;
+  border-bottom: 1px solid #000000;
+}
+
+.headerContainer {
+  height: 100%;
+  margin: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navIcons {
+  display: flex;
+  gap: 20px;
+}
+
+.navbtn {
+  border: none;
+  background: none;
+  cursor: pointer;
+}
