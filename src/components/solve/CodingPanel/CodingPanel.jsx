@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import CodeEditor from './CodeEditor';
-import AiReviewView from './AiReviewView';
+import CodeEditor from '../CodeEditor';
+import AiReviewView from '../AiReviewView';
 import styles from './CodingPanel.module.css';
 
 function CodingPanel({ onTabChange }) {
@@ -41,18 +41,18 @@ function CodingPanel({ onTabChange }) {
       <div className={styles.content}>
         {tab === 'code' ? (
           <section
-            id="panel-code"
             role="tabpanel"
             aria-labelledby="tab-code"
+            id="panel-code"
             className={styles.fill}
           >
             <CodeEditor />
           </section>
         ) : (
           <section
-            id="panel-review"
             role="tabpanel"
             aria-labelledby="tab-review"
+            id="panel-review"
             className={styles.fill}
           >
             <AiReviewView />

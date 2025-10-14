@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import TestCaseResults from './TestCaseResults';
-import SubmissionResult from './SubmissionResult';
+import TestCaseResults from '../TestCaseResults';
+import SubmissionResult from '../SubmissionResult';
 import styles from './ResultPanel.module.css';
 
 function ResultPanel() {
@@ -8,24 +8,24 @@ function ResultPanel() {
 
   return (
     <div className={styles.panel}>
-      <div className={styles.tabs} role="tablist" aria-label="코드/AI 코드 리뷰">
+      <div className={styles.tabs} role="tablist" aria-label="테스트 결과/제출 결과">
         <button
           role='tab'
           aria-selected={tab === 'test'}
-          aria-controls="panelTest"
-          id="tabTest"
-          onClick={() => setTab('test')}
+          aria-controls="panel-test"
+          id="tab-test"
           className={styles.tabBtn}
+          onClick={() => setTab('test')}
         >
           테스트 결과
         </button>
         <button
           role='tab'
           aria-selected={tab === 'submit'}
-          aria-controls="panelSubmit"
-          id="tabSubmit"
-          onClick={() => setTab('submit')}
+          aria-controls="panel-submit"
+          id="tab-submit"
           className={styles.tabBtn}
+          onClick={() => setTab('submit')}
         >
           제출 결과
         </button>
@@ -34,18 +34,18 @@ function ResultPanel() {
       <div className={styles.content}>
         {tab === 'test' ? (
           <section
-            id="panelTest"
             role="tabpanel"
-            aria-labelledby="tabTest"
+            aria-labelledby="tab-test"
+            id="panel-test"
             className={styles.fill}
           >
             <TestCaseResults />
           </section>
         ) : (
           <section
-            id="panelSubmit"
             role="tabpanel"
-            aria-labelledby="tabSubmit"
+            aria-labelledby="tab-submit"
+            id="panel-submit"
             className={styles.fill}
           >
             <SubmissionResult />

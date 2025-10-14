@@ -14,7 +14,7 @@
   flex: 0 0 50px;
 }
 
-.tabBtn {
+.tab-btn {
   width: 130px;
   border: 1px solid #000000;
   display: flex;
@@ -27,7 +27,7 @@
   user-select: none;
 }
 
-.tabBtn[aria-selected="true"] {
+.tab-btn[aria-selected="true"] {
   background: #3B465E;
   color: #FFFFFF;
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import SubmissionHistory from './SubmissionHistory';
-import ProblemViewer from './ProblemViewer';
+import SubmissionHistory from '../SubmissionHistory';
+import ProblemViewer from '../ProblemViewer';
 import styles from './ProblemPanel.module.css';
 
 function ProblemPanel() {
@@ -34,18 +34,18 @@ function ProblemPanel() {
       <div className={styles.content}>
         {tab === 'problem' ? (
           <section
-            id="panel-problem"
             role="tabpanel"
             aria-labelledby="tab-problem"
+            id="panel-problem"
             className={styles.fill}
           >
             <ProblemViewer />
           </section>
         ) : (
           <section
-            id="panel-history"
             role="tabpanel"
             aria-labelledby="tab-history"
+            id="panel-history"
             className={styles.fill}
           >
             <SubmissionHistory />

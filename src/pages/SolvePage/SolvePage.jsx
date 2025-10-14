@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
 import SolveSidebar from '../../components/solve/SolveSidebar';
-import CodingPanel from '../../components/solve/CodingPanel';
-import ResultPanel from '../../components/solve/ResultPanel';
-import ProblemPanel from '../../components/problems/ProblemPanel';
+import CodingPanel from '../../components/solve/CodingPanel/CodingPanel';
+import ResultPanel from '../../components/solve/ResultPanel/ResultPanel';
+import ProblemPanel from '../../components/problems/ProblemPanel/ProblemPanel';
+import styles from './SolvePage.module.css';
 
 function SolvePage() {
   const [codingTab, setCodingTab] = useState('code');
 
   return (
-    <div className='ide' style={{ display: 'flex' }}>
+    <div className={styles.ideLayout}>
       <SolveSidebar />
-      <div className='problemPanel'>
+      <div className={styles.problemContainer}>
         <ProblemPanel />
       </div>
-      <div className="idePanel" style={{ flex: '1 1 auto', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+      <div className={styles.solveContainer}>
         <CodingPanel onTabChange={setCodingTab} />
         {codingTab === 'code' ? (
           <ResultPanel />
