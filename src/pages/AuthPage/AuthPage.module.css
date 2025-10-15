@@ -54,7 +54,7 @@
   font-size: 18px;
   border: 1px solid #e9ecef;
   background-color: #f2f9ff; /* 입력창 배경색 */
-  border-radius: 4px;
+  border-radius: 5px;
 }
 
 .stayLoggedIn {
