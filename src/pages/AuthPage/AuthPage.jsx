@@ -20,19 +20,38 @@ function AuthPage() {
       </div>
       <div className={styles.authContainer}>
         <div className={styles.formWrapper}>
-          {/* isLoginView 값에 따라 적절한 폼을 보여줍니다. */}
-          {isLoginView ? <LoginForm /> : <SignupForm />}
+          {/* SignupForm에 onSignupSuccess라는 prop으로 toggleView 함수를 전달합니다.
+            회원가입 성공 시 이 함수가 호출되어 로그인 폼으로 바뀝니다.
+          */}
+          {isLoginView ? (
+            <LoginForm />
+          ) : (
+            <SignupForm onSignupSuccess={toggleView} />
+          )}
 
           <div className={styles.divider} />
           <div className={styles.toggleLink}>
             {isLoginView ? (
               <span>
                 아직 계정이 없나요?{' '}
-                <button onClick={toggleView}>회원가입</button>
+                <button
+                  type="button"
+                  onClick={toggleView}
+                  className={styles.toggleButton}
+                >
+                  회원가입
+                </button>
               </span>
             ) : (
               <span>
-                이미 계정이 있나요? <button onClick={toggleView}>로그인</button>
+                이미 계정이 있나요?{' '}
+                <button
+                  type="button"
+                  onClick={toggleView}
+                  className={styles.toggleButton}
+                >
+                  로그인
+                </button>
               </span>
             )}
           </div>
