@@ -1,19 +1,25 @@
-import { Link, useParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import SolveSidebar from '../../components/solve/SolveSidebar';
+import CodingPanel from '../../components/solve/CodingPanel/CodingPanel';
+import ResultPanel from '../../components/solve/ResultPanel/ResultPanel';
+import ProblemPanel from '../../components/problems/ProblemPanel/ProblemPanel';
+import styles from './SolvePage.module.css';
 
 function SolvePage() {
-  // URL에 있는 문제 ID를 가져올 수 있습니다.
-  const { problemId } = useParams();
+  const [codingTab, setCodingTab] = useState('code');
 
   return (
-    <div>
-      <h1>문제 풀이 페이지</h1>
-      <p>현재 풀고 있는 문제 ID: {problemId}</p>
-      <Link to="/workspace">
-        <button>← 목록으로 돌아가기</button>
-      </Link>
-      <Link to="/">
-        <button>시작으로 돌아가기</button>
-      </Link>
+    <div className={styles.ideLayout}>
+      <SolveSidebar />
+      <div className={styles.problemContainer}>
+        <ProblemPanel />
+      </div>
+      <div className={styles.solveContainer}>
+        <CodingPanel onTabChange={setCodingTab} />
+        {codingTab === 'code' ? (
+          <ResultPanel />
+        ) : null}
+      </div>
     </div>
   );
 }
