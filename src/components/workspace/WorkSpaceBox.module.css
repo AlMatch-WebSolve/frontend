@@ -1,0 +1,21 @@
+.work-space-box-border {
+    position: absolute;
+    top: 224px;
+    left: 160px;
+    width: 1600px;
+    height: 400px;
+    border: 2px dashed #666666;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.work-space-box-context {
+    position: absolute;
+    width: 415px;
+    height: 45px;
+    top: 402px;
+    left: 753px;
+    font: #000000;
+    font-size: 32px;
+}
