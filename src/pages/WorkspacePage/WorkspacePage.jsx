@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 // import './WorkspacePage.module.css';
-import WorkSpaceProblemModal from '../../components/workspace/WorkSpaceProblemModal';
-import WorkSpaceProblemList from '../../components/workspace/WorkSpaceProblemList.jsx';
+import WorkSpaceProblemModal from '../../components/workspace/WorkSpaceProblemModal/WorkSpaceProblemModal';
+import WorkSpaceProblemList from '../../components/workspace/WorkSpaceProblemList/WorkSpaceProblemList.jsx';
 import '../../styles/global.css';
 import styles from './WorkspacePage.module.css';
 
@@ -33,7 +33,13 @@ function WorkspacePage() {
   const [selectedProblems, setSelectedProblems] = useState([]);
 
   const handleSelectProblem = (problem) => {
-    setSelectedProblems(prev => [...prev, problem]);
+    // 선택한 문제에 고유 ID 추가
+    const newProblem = {
+      ...problem,
+      id: `problem-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` // 완전히 고유한 ID 생성
+      // id: `problem-${Date.now()}` // 타임스탬프로 고유 ID 생성
+    };
+    setSelectedProblems(prev => [...prev, newProblem]); // problem 대신 newProblem
   };
 
   return (
@@ -74,14 +80,48 @@ function WorkspacePage() {
               </div>
             ))}
             {/* 문제 목록 렌더링 */}
-            {selectedProblems.map((problem, index) => (
+            {selectedProblems.map((problem) => (
               <WorkSpaceProblemList
-                key={`problem-${index}`}
+                key={problem.id} // ID를 key로 사용
+                id={problem.id} // ID를 prop으로 전달
+                initialTitle={problem.title}
+                selectedLanguage={problem.selectedLanguage}
+                onFileNameConfirm={(name) => {
+                  // 이름 변경 처리
+                  setSelectedProblems(prev => 
+                    prev.map(item => 
+                      item.id === problem.id 
+                        ? {...item, title: name} 
+                        : item
+                    )
+                  );
+                }}
+                onDelete={() => {
+                  console.log('삭제 요청된 ID:', problem.id);
+                  // ID로 삭제
+                  setSelectedProblems(prev => prev.filter(item => item.id !== problem.id));
+                }}
+              />
+            ))}
+
+
+
+
+            {/* {selectedProblems.map((problem) => (
+              <WorkSpaceProblemList
+                key={problem.id}
+                id={problem.id}
+                // key={`problem-${index}`}
                 initialTitle={problem.title}
                 selectedLanguage={problem.selectedLanguage}
                 onFileNameConfirm={(name) => console.log(`파일 이름 확정: ${name}`)}
+                // 여기 onDelete prop 추가
+                onDelete={() => {
+                  setSelectedProblems(prev => prev.filter((_, i) => i !== index));
+                }}
               />
-            ))}
+            ))} */}
+
           </ul>
         ) : (
           <div className={styles.workSpaceBox}>
@@ -90,31 +130,6 @@ function WorkspacePage() {
             </div>
           </div>
         )}
-
-        {/* {selectedProblems.length > 0 ? (
-          <ul className={styles.folderList}>
-            {selectedProblems.map((problem, index) => (
-              <WorkSpaceProblemList
-                key={index}
-                initialTitle={problem.title}
-                selectedLanguage={problem.selectedLanguage}
-                onFileNameConfirm={(name) => console.log(`파일 이름 확정: ${name}`)}
-              />
-            ))}
-          </ul>
-        ) : (
-          <div className={styles.workSpaceBox}>
-            <div className={styles.workSpaceBoxContext}>
-              새 폴더나 문제를 생성해주세요.
-
-            </div>
-          </div>
-        )} */}
-
-
-
-
-
 
         {/* 문제 생성 모달 */}
         <WorkSpaceProblemModal

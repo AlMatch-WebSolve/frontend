@@ -1,9 +1,9 @@
 import React, {useState} from 'react';
 import styles from './WorkSpaceProblemModal.module.css';
-import Pagination from './WorkSpacePagination';
-import WorkSpaceSearch from './WorkSpaceSearch';
-import CloseIcon from '../../assets/icons/x-02.svg';
-import PlusIcon from '../../assets/icons/plus-01.svg';
+import Pagination from '../WorkSpacePagination/WorkSpacePagination';
+import WorkSpaceSearch from '../WorkSpaceSearch/WorkSpaceSearch';
+import CloseIcon from '../../../assets/icons/x-02.svg';
+import PlusIcon from '../../../assets/icons/plus-01.svg';
 
 const WorkSpaceProblemModal = ({ isOpen, onClose, onSelectProblem }) => {
   // 모든 useState는 컴포넌트 최상단에 위치

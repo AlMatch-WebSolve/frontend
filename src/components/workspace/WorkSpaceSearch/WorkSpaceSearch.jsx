@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
 import styles from './WorkSpaceSearch.module.css';
-import SearchIcon from '../../assets/icons/search-01.svg';
+import SearchIcon from '../../../assets/icons/search-01.svg';
 
 
 const WorkSpaceSearch = ({ onSearch }) => {
   const [searchTerm, setSearchTerm] = useState('');
   
-  // const handleSearchChange = (e) => {
-  //   setSearchTerm(e.target.value);
-  // };
-
   // 엔터를 치지 않아도 우선 보여주기
   const handleSearchChange = (e) => {
     const term = e.target.value; 
