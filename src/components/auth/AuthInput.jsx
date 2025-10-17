@@ -1,4 +1,4 @@
-import styles from '../../pages/AuthPage/AuthPage.module.css'; 
+import styles from '../../pages/AuthPage/AuthPage.module.css';
 
 function AuthInput({ label, type, placeholder, value, onChange }) {
   return (

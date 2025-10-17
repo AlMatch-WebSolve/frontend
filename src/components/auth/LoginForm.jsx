@@ -30,27 +30,27 @@ function LoginForm() {
     <form className={styles.form} onSubmit={handleSubmit}>
       <h2>로그인</h2>
       <AuthInput
-        placeholder="이메일"
-        type="email"
+        placeholder='이메일'
+        type='email'
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
       <AuthInput
-        placeholder="비밀번호"
-        type="password"
+        placeholder='비밀번호'
+        type='password'
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
       <div className={styles.stayLoggedIn}>
         <input
-          type="checkbox"
-          id="stayLoggedIn"
+          type='checkbox'
+          id='stayLoggedIn'
           checked={rememberMe}
           onChange={(e) => setRememberMe(e.target.checked)}
         />
-        <label htmlFor="stayLoggedIn">로그인 상태 유지</label>
+        <label htmlFor='stayLoggedIn'>로그인 상태 유지</label>
       </div>
-      <button type="submit" className={styles.submitButton}>
+      <button type='submit' className={styles.submitButton}>
         로그인하기
       </button>
     </form>

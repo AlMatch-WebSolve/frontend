@@ -53,30 +53,30 @@ function SignupForm({ onSignupSuccess }) {
     <form className={styles.form} onSubmit={handleSubmit}>
       <h2>회원가입</h2>
       <AuthInput
-        label="닉네임"
-        type="text"
+        label='닉네임'
+        type='text'
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
       <AuthInput
-        label="이메일"
-        type="email"
+        label='이메일'
+        type='email'
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
       <AuthInput
-        label="비밀번호"
-        type="password"
+        label='비밀번호'
+        type='password'
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
       <AuthInput
-        label="비밀번호 확인"
-        type="password"
+        label='비밀번호 확인'
+        type='password'
         value={passwordConfirm}
         onChange={(e) => setPasswordConfirm(e.target.value)}
       />
-      <button type="submit" className={styles.submitButton}>
+      <button type='submit' className={styles.submitButton}>
         회원가입하기
       </button>
     </form>
