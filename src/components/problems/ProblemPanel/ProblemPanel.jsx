@@ -8,22 +8,22 @@ function ProblemPanel() {
 
   return (
     <div className={styles.panel}>
-      <div className={styles.tabs} role="tablist" aria-label="문제/제출 내역">
+      <div className={styles.tabs} role='tablist' aria-label='문제/제출 내역'>
         <button
-          role="tab"
+          role='tab'
           aria-selected={tab === 'problem'}
-          aria-controls="panel-problem"
-          id="tab-problem"
+          aria-controls='panel-problem'
+          id='tab-problem'
           className={`${styles.tabBtn} ${styles.tabBtnSpacing}`}
           onClick={() => setTab('problem')}
         >
           문제
         </button>
         <button
-          role="tab"
+          role='tab'
           aria-selected={tab === 'history'}
-          aria-controls="panel-history"
-          id="tab-history"
+          aria-controls='panel-history'
+          id='tab-history'
           className={styles.tabBtn}
           onClick={() => setTab('history')}
         >
@@ -34,18 +34,18 @@ function ProblemPanel() {
       <div className={styles.content}>
         {tab === 'problem' ? (
           <section
-            role="tabpanel"
-            aria-labelledby="tab-problem"
-            id="panel-problem"
+            role='tabpanel'
+            aria-labelledby='tab-problem'
+            id='panel-problem'
             className={styles.fill}
           >
             <ProblemViewer />
           </section>
         ) : (
           <section
-            role="tabpanel"
-            aria-labelledby="tab-history"
-            id="panel-history"
+            role='tabpanel'
+            aria-labelledby='tab-history'
+            id='panel-history'
             className={styles.fill}
           >
             <SubmissionHistory />
@@ -53,7 +53,7 @@ function ProblemPanel() {
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default ProblemPanel
+export default ProblemPanel;

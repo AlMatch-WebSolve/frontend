@@ -11,9 +11,9 @@ function LandingPage() {
       </h1>
 
       {/* '/auth' 경로로 이동하는 버튼 */}
-      <Link to="/auth" className={styles.ctaButton}>
+      <Link to='/auth' className={styles.ctaButton}>
         <span className={styles.buttonLabel}>시작하기</span>
-        <img src={NextIcon} alt="다음으로" className={styles.buttonIcon} />
+        <img src={NextIcon} alt='다음으로' className={styles.buttonIcon} />
       </Link>
     </div>
   );

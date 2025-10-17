@@ -16,9 +16,7 @@ function SolvePage() {
       </div>
       <div className={styles.solveContainer}>
         <CodingPanel onTabChange={setCodingTab} />
-        {codingTab === 'code' ? (
-          <ResultPanel />
-        ) : null}
+        {codingTab === 'code' ? <ResultPanel /> : null}
       </div>
     </div>
   );
