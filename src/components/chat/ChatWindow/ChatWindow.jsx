@@ -25,25 +25,96 @@ function ChatWindow({ onClose }) {
             </button>
           </div>
         </header>
-        <main className={styles.chatBody}>
-          {/* 상대방 메시지 */}
-          <div className={styles.messageRow}>
-            <div className={styles.messageContent}>
-              <span className={styles.nickname}>닉네임1</span>
-              <p className={styles.messageBubble}>코드에 대해 질문있습니다.</p>
+        <div className={styles.chatBodyContainer}>
+          <div className={styles.chatBody}>
+            {/* 상대방 메시지 */}
+            <div className={styles.messageRow}>
+              <div className={styles.messageContent}>
+                <span className={styles.nickname}>닉네임 1</span>
+                <p className={styles.messageBubble}>
+                  코드에 대해 질문있습니다.
+                </p>
+              </div>
             </div>
-          </div>
 
-          {/* 내 메시지 */}
-          <div className={`${styles.messageRow} ${styles.myMessageRow}`}>
-            <div className={styles.messageContent}>
-              <span className={styles.nickname}>닉네임1</span>
-              <p className={styles.messageBubble}>
-                AI 코드 리뷰를 활용해보세요.
-              </p>
+            {/* 내 메시지 */}
+            <div className={`${styles.messageRow} ${styles.myMessageRow}`}>
+              <div className={styles.messageContent}>
+                <span className={styles.nickname}>닉네임 1</span>
+                <p className={styles.messageBubble}>
+                  AI 코드 리뷰를 활용해보세요.
+                </p>
+              </div>
+            </div>
+            <div className={`${styles.messageRow} ${styles.myMessageRow}`}>
+              <div className={styles.messageContent}>
+                <span className={styles.nickname}>닉네임 1</span>
+                <p className={styles.messageBubble}>
+                  AI 코드 리뷰를 활용해보세요.
+                </p>
+              </div>
+            </div>
+            {/* 상대방 메시지 */}
+            <div className={styles.messageRow}>
+              <div className={styles.messageContent}>
+                <span className={styles.nickname}>닉네임 1</span>
+                <p className={styles.messageBubble}>
+                  코드에 대해 질문있습니다.
+                </p>
+              </div>
+            </div>
+            <div className={`${styles.messageRow} ${styles.myMessageRow}`}>
+              <div className={styles.messageContent}>
+                <span className={styles.nickname}>닉네임 1</span>
+                <p className={styles.messageBubble}>
+                  AI 코드 리뷰를 활용해보세요.
+                </p>
+              </div>
+            </div>
+            {/* 상대방 메시지 */}
+            <div className={styles.messageRow}>
+              <div className={styles.messageContent}>
+                <span className={styles.nickname}>닉네임 1</span>
+                <p className={styles.messageBubble}>
+                  코드에 대해 질문있습니다.
+                </p>
+              </div>
+            </div>
+            <div className={`${styles.messageRow} ${styles.myMessageRow}`}>
+              <div className={styles.messageContent}>
+                <span className={styles.nickname}>닉네임 1</span>
+                <p className={styles.messageBubble}>
+                  AI 코드 리뷰를 활용해보세요.
+                </p>
+              </div>
+            </div>
+            <div className={`${styles.messageRow} ${styles.myMessageRow}`}>
+              <div className={styles.messageContent}>
+                <span className={styles.nickname}>닉네임 1</span>
+                <p className={styles.messageBubble}>
+                  AI 코드 리뷰를 활용해보세요.
+                </p>
+              </div>
+            </div>
+            {/* 상대방 메시지 */}
+            <div className={styles.messageRow}>
+              <div className={styles.messageContent}>
+                <span className={styles.nickname}>닉네임 1</span>
+                <p className={styles.messageBubble}>
+                  코드에 대해 질문있습니다.
+                </p>
+              </div>
+            </div>
+            <div className={`${styles.messageRow} ${styles.myMessageRow}`}>
+              <div className={styles.messageContent}>
+                <span className={styles.nickname}>닉네임 1</span>
+                <p className={styles.messageBubble}>
+                  AI 코드 리뷰를 활용해보세요.
+                </p>
+              </div>
             </div>
           </div>
-        </main>
+        </div>
         <footer className={styles.chatInputArea}>
           <input
             className={styles.chatInput}

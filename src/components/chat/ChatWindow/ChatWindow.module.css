@@ -51,10 +51,19 @@
 }
 
 /* ======== 채팅 메시지 영역 ======== */
+.chat-body-container {
+  overflow: auto;
+  width: 100%;
+  height: 100%;
+}
+
+.chat-body-container::-webkit-scrollbar {
+  display: none;
+}
+
 .chat-body {
   flex-grow: 1;
   padding: 15px;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 20px; /* 메시지 사이 간격 */
