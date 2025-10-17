@@ -1,0 +1,67 @@
+.chatWindow {
+  position: absolute;
+  bottom: 200px;
+  left: 70px;
+  z-index: 1000;
+
+  width: 340px;
+  height: 440px;
+  background-color: white;
+  border: 1px solid #999999;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+.chatHeader {
+  padding: 10px;
+  background-color: #f1f1f1;
+  cursor: move; /* 드래그할 수 있다는 것을 알려주는 마우스 커서 */
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.closeBtn {
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 16px;
+}
+.chatBody {
+  padding: 15px;
+  flex-grow: 1; /* 남은 공간을 모두 차지하도록 설정 */
+  min-height: 200px; /* 최소 높이 지정 */
+  overflow-y: auto; /* 내용이 많아지면 스크롤 생성 */
+}
+
+.chatInput {
+  display: flex;
+  border-top: 1px solid #ccc;
+  padding: 10px;
+}
+
+.chatInput input {
+  flex-grow: 1;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px;
+  margin-right: 8px;
+}
+
+.chatInput button {
+  padding: 8px 12px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.chatInput button:hover {
+  background-color: #0056b3;
+}
