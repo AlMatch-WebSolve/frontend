@@ -34,7 +34,11 @@ export const AuthProvider = ({ children }) => {
     setIsLoggedIn(false);
   };
 
-  const value = { isLoggedIn, login, logout, loading };
+  const signup = async (name, email, password) => {
+    return apiClient.post('/api/auth/signup', { name, email, password });
+  };
+
+  const value = { isLoggedIn, login, logout, signup, loading };
 
   // 첫 로그인 상태 확인이 끝나기 전까지는 로딩 화면을 보여줌
   if (loading) {
