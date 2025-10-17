@@ -1,324 +1,95 @@
-/* 시작페이지 */
-
-body {
-    background-color: #F2F9ff;
+/* 추가 */
+.work-space-background {
+  width: 100%; 
+  height: calc(100vh - 60px); /* 전체 높이에서 header 60px을 뺀값: 스크롤이 생기는걸 막기 위해 사용 */
+  background-color: #F2F9ff;
 }
 
-/* 상단 바 */
-.top-bar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 1920px;
-    height: 60px;
-    border-bottom: 1px solid #3B465E;
-    background-color: #FFFFFF;
+/* 추가 */
+.work-space-container {
+  max-width: 1600px;
+  margin: 0 auto; /* 중앙 정렬 */
+  padding-top: 80px;
 }
 
-/* websolve 로고 */
-.logo {
-    position: absolute;
-    top: 15px;
-    left: 20px;
-    width: 180px;
-    height: 30.45px;
-    /* background-color: #f5f5f5; */
+/* 추가 */
+.work-space-buttons-header-container {
+  display: flex;
+  justify-content: space-between;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+/* 추가 */
+.work-space-buttons {
+  display: flex;
+  gap: 20px;
 }
 
 /* 최근 항목 */
-.recent {
-    position: absolute;
-    top: 140px;
-    left: 180px;
-    width: 95px;
-    height: 34px;
-    font-size: 24px;
-    color: #000000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* 새 폴더 • 문제 생성 컨테이너 */
-.right-top-group {
-    position: absolute;
-    top: 140px;
-    left: 1552px;
-    width: 188px;
-    height: 34px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 24px;
-    color: #000000;
-}
-
-/* 새 폴더 */
-.newfolder {
-    width: 73px;
-    height: 34px;
-    font-size: 24px;
-    text-align: center;
-}
-
-/* 문제 생성 */
-.newproblem {
-    width: 95px;
-    height: 34px;
-    font-size: 24px;
-    text-align: center;
-}
-
-/* 구분선 */
-.underline {
-    position: absolute;
-    width: 1600px;
-    height: opx;
-    top: 184px;
-    left: 160px;
-    border: none;
-    border-bottom: 1px solid #000000;
-}
-
-/* 중앙 점선 박스 */
-.main-box-border {
-    position: absolute;
-    top: 224px;
-    left: 160px;
-    width: 1600px;
-    height: 400px;
-    border: 2px dashed #666666;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* 중앙 점선 박스 내용 */
-.main-box-context {
-    position: absolute;
-    width: 415px;
-    height: 45px;
-    top: 402px;
-    left: 753px;
-    font: #000000;
-    font-size: 32px;
-}
-
-/* 버튼(새 폴더, 문제 생성) */
-.btn {
-    background-color: transparent;
-    border: none;
-    padding: 0
-}
-
-.btn:hover {
-    cursor: pointer;
-}
-
-
-/* 모달 */
-.modal {
-    display: none;
-    position: fixed;
-    width: 900px;
-    height: 600px;
-    top: 240px;
-    left: 510px;
-    justify-content: center;
-    align-items: center;
-    background-color: #ffffff;
-    border: 1px solid #666666;
-}
-
-/* 모달 헤더 */
-.modal-header {
-    position: absolute;
-    width: 189px;
-    height: 34px;
-    top: 13px;
-    left: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 24px;
-}
-
-/* 모달 닫기 버튼 */
-.close-btn {
-    position: absolute;
-    display: flex;
-    width: 30px;
-    height: 30px;
-    top: 15px;
-    left: 850px;
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-}
-
-/* 모달 언더라인 */
-.modal-underline {
-    position: absolute;
-    width: 900px;
-    top: 60px;
-    border: none;
-    margin: 0;
-    border-bottom: 1px solid #000000;
-}
-
-/* 모달 문제 검색 */
-.search-container {
-    position: relative;
-}
-
-#problemSearch {
-    position: absolute;
-    width: 800px;
-    height: 40px;
-    top: 100px;
-    left: 50px;
-    font-size: 18px;
-    padding-left: 10px;
-    color: #999999;
-    background-color: #F2F9FF;
-    border : none;
-}
-
-#problemSearch::placeholder {
-    width: 71px;
-    height: 25px;
-    display: inline-block;
-}
-
-/* 검색창 X 버튼 제거 */
-#problemSearch::-webkit-search-cancel-button {
-    -webkit-appearance: none;
-    appearance: none;
-    display: none;
-  }
-
-.search-button {
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    top: 108px;
-    left: 816px;
-    cursor: pointer;
-    padding: 0;
-    background: none;
-    border: none;
-}
-
-.problem-table {
-    position : absolute;
-    width: 800px;
-    height: 320px;
-    top: 160px;
-    left: 50px;
-    /* background-color: #3B465E; */
-    text-align: center;
-    border-left: none;
-    border-right: none;
-    border-collapse: collapse;
-}
-
-table, th, td {
-  border: 1px solid #666666;
-}
-
-.problem-table th {
-  font-size: 18px;
-  font-weight: normal;
-  height: 25px;
-}
-
-.problem-table td {
-  font-size: 16px;
-  height: 22px;
-}
-
-.problem-table th:first-child,
-.problem-table td:first-child {
-    border-left: none;
-}
-.problem-table th:last-child,
-.problem-table td:last-child {
-    border-right: none;
-}
-/* 테이블 추가 버튼 */
-.problem-add-btn {
-  widgh: 14.4px;
-  height: 14.4px;
-  border: none;
+.work-space-buttons-recent {
+  width: 95px;
+  height: 34px;
+  font-size: 24px;
+  color: #000000;
   background-color: transparent;
-  background-size: 24px 24px;
-  background-position: center;
-  background-repeat: no-repeat;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* cursor: pointer; */
+  margin-bottom: 10px; /* 추가 */
+}
+    
+/* 새 폴더 */
+.work-space-buttons-newfolder {
+  width: 73px;
+  height: 34px;
+  font-size: 24px;
+  text-align: center;
+  background-color: transparent;
+  border: none;
+  padding: 0;
   cursor: pointer;
 }
-
-
-/* 페이지네이션 */
-  .pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    top: 491px;
-    left: 401px;
-  }
-  /* 더 이상 없을 시버튼 숨기기 */
-  .pagination-btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-  /* 페이지 표시 */
-  .page-info {
-    position: absolute;
-    width: 27px;
-    height: 20px;
-    top: 491px;
-    left: 435px;
-    font-size: 14px;
-  }
-  /* 앞 페이지 버튼 */
-  #prev-btn {
-    width: 20px;
-    height: 20px;
-    top: 489px;
-    left: 401px;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-  }
-  /* 다음 페이지 버튼 */
-  #next-btn {
-    width: 24px;
-    height: 24px;
-    top: 489px;
-    left: 472px;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-  }
   
-  .pagination-info {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
-    font-size: 16px;
-    color: #333;
-  }
+/* 문제 생성 */
+.work-space-buttons-newproblem {
+  width: 95px;
+  height: 34px;
+  font-size: 24px;
+  text-align: center;
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+  
+/* 구분선 */
+.work-space-buttons-underline {
+  width: 1600px;
+  height: 0px;
+  border: none;
+  border-bottom: 1px solid #000000;
+}
 
+.work-space-box {
+  width: 1600px;
+  height: 400px;
+  border: 2px dashed #666666;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 40px; /* 추가 */
+}
 
-
-
-
-
-
+.work-space-box-context {
+  width: 415px;
+  height: 45px;
+  color: #000000;
+  font-size: 32px;
+}
 
   /* folder-list 내의 모든 아이템에 적용될 기본 스타일 */
 .folder-list {
@@ -326,49 +97,3 @@ table, th, td {
   width: 1600px;
   height: 60px;
 }
-
-.folder-item {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 20px; /* 아이콘과 텍스트 사이 간격 */
-  padding: 6px 12px; /* 항목 내부 패딩 */
-  cursor: pointer; /* 마우스 오버 시 손가락 모양으로 변경 */
-}
-
-/* 파일 아이콘 이미지 크기 조정 */
-.file-icon img {
-  width: 30px; /* 아이콘 크기 조절 */
-  height: 30px;
-  vertical-align: middle;
-}
-
-/* 파일 이름 입력 필드 스타일 */
-.file-name-input {
-  width: 78px;
-  height: 25px;
-  border: none;
-  font-size: 18px;
-  outline: none; /* 포커스 시 테두리 제거 */
-  background: transparent;
-  flex-grow: 1; /* 너비 자동 확장 */
-  padding: 0; /* 내부 여백 제거 */
-}
-
-/* 파일 확장자 텍스트 스타일 */
-.file-ext {
-  font-size: 16px;
-  color: #666; /* 회색으로 */
-  margin-left: -5px; /* 입력 필드와 조금 더 가깝게 */
-}
-
-/* 확정된 파일 이름 표시 스타일 */
-.file-name-display {
-  font-size: 16px;
-  flex-grow: 1;
-}
-
-
-
-
-

@@ -18,26 +18,25 @@
     top: 240px;
     left: 510px;
     background-color: #ffffff;
-    border: 1px solid #666666;
+    border: 1px solid #000000;
     width: 900px;
     height: 600px; /* 기존 HTML의 고정 높이 */
     display: flex; /* 내부 요소 배치를 위해 flexbox 사용 */
     flex-direction: column; /* 세로 방향으로 요소들을 배치 */
     padding-bottom: 70px; /* 페이지네이션 공간 확보 (페이지네이션의 실제 높이에 따라 조정) */
+    border-radius: 5px;
   }
   
   /* 모달 헤더 */
-  .modal-header {
-    /* position: absolute; 제거, flexbox 플로우에 따라 배치 */
-    width: auto; /* 내용에 맞춰 자동으로 조정 */
+  /* .modal-header {
+    width: auto;
     height: 34px;
-    padding: 13px 20px; /* 상하좌우 패딩 */
+    padding: 13px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 24px;
-    border-bottom: 1px solid #eee; /* 모달 언더라인 역할을 대체 */
-  }
+  } */
   
   /* 알고리즘 문제 목록 */
   .modal-title {
@@ -101,6 +100,8 @@
   #problemSearch::placeholder {
       width: 71px;
       height: 25px;
+      top: 7px;
+      left: 10px;
       display: inline-block;
   }
   
@@ -143,7 +144,6 @@
   .problem-table th,
   .problem-table td {
     border: 1px solid #666666;
-    border-top: none;
     padding: 10px 5px;
     word-break: keep-all;
   }
@@ -175,9 +175,7 @@
   .problem-table td:last-child {
       border-right: none;
   }
-  .problem-table tr:last-child td {
-    border-bottom: none; /* 마지막 행의 하단 테두리 제거 */
-  }
+
   
   /* 테이블 추가 버튼 */
   .problem-add-btn {
@@ -192,3 +190,39 @@
     width: 100%;
     height: 100%;
   }
+
+  /* WorkSpaceProblemModal.module.css 파일에 추가 */
+
+.searchInfo {
+    position: absolute; /* 👈 위치를 절대값으로 지정 */
+    top: 141px;  /* 👈 이 값을 조절해서 위아래 위치를 변경 (예: 검색창 바로 아래) */
+    left: 50px; /* 👈 이 값을 조절해서 좌우 위치를 변경 */
+    width: 200px;
+    height: 20px;
+    font-size: 16px;
+    color: #333;
+}
+
+/* 언어 선택 부분 */
+
+.languageLabel {
+  position: absolute;
+  width: 78px;
+  height: 28px;
+  top: 489px;
+  left: 640px;
+  font-size: 20px;
+}
+
+.languageDropdown {
+  position: absolute;
+  width: 115px;
+  height: 28px;
+  top: 489px;
+  left: 735px;
+  font-size: 16px;
+  color: #ffffff;
+  background-color: #3B465E;
+  padding: 5px;
+  border-radius: 5px;
+}

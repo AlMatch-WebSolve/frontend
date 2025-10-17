@@ -1,24 +1,50 @@
-import React,{userState} from 'react';
+import React, { useState } from 'react';
 import styles from './WorkSpaceSearch.module.css';
+import SearchIcon from '../../assets/icons/search-01.svg';
+
 
 const WorkSpaceSearch = ({ onSearch }) => {
-    const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // const handleSearchChange = (e) => {
+  //   setSearchTerm(e.target.value);
+  // };
 
-    const handleSearchChange = (e) => {
-        setSearchTerm(e.tatget.value);
-    };
-
-    const handleSearchSubmit = () => {
-        onSearch(searchTerm);
+  // 엔터를 치지 않아도 우선 보여주기
+  const handleSearchChange = (e) => {
+    const term = e.target.value; 
+    setSearchTerm(term);        
+    onSearch(term);             
+  };
+  
+  const handleSearchSubmit = () => {
+    onSearch(searchTerm);
+  };
+  
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSearchSubmit();
     }
+  };
 
-    const handleKeyPress = (e) => {
-        if (e.key === 'Enter') {
-            handleSearchSubmit();
-        }
-    };
+  return (
+    <div className={styles.searchContainer}>
+      <input 
+        type="search" 
+        className={styles.searchInput}
+        placeholder="문제 검색"
+        value={searchTerm}
+        onChange={handleSearchChange}
+        onKeyDown={handleKeyDown}
+      />
+      <button 
+        className={styles.searchButton}
+        onClick={handleSearchSubmit}
+      >
+        <img src={SearchIcon} alt="검색" />
+      </button>
+    </div>
+  );
+};
 
-    return {
-        
-    }
-}
+export default WorkSpaceSearch;

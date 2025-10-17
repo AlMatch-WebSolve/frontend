@@ -1,0 +1,25 @@
+
+.header {
+    height: 60px;
+    border-bottom: 1px solid #000000;
+  }
+  
+  .header-container {
+    height: 100%;
+    margin: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .nav-icons {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .nav-btn {
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+  

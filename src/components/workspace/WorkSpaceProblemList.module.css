@@ -1,0 +1,46 @@
+/* WorkSpaceProblemList.module.css */
+.fileInputItem {
+  /* 파일 입력 중일 때 스타일 */
+}
+
+.folder-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px; /* 아이콘과 텍스트 사이 간격 */
+  padding: 15px 20px; /* 항목 내부 패딩 */
+  cursor: pointer; /* 마우스 오버 시 손가락 모양으로 변경 */
+  border-bottom: 1px solid #000000;
+}
+
+/* 파일 아이콘 이미지 크기 조정 */
+.file-icon img {
+  width: 30px; /* 아이콘 크기 조절 */
+  height: 30px;
+  vertical-align: middle;
+}
+
+/* 파일 이름 입력 필드 스타일 */
+.file-name-input {
+  width: 78px;
+  height: 25px;
+  border: none;
+  font-size: 18px;
+  outline: none; /* 포커스 시 테두리 제거 */
+  background: transparent;
+  flex-grow: 1; /* 너비 자동 확장 */
+  padding: 0; /* 내부 여백 제거 */
+}
+
+/* 파일 확장자 텍스트 스타일 */
+.file-ext {
+  font-size: 18px;
+  color: #666; /* 회색으로 */
+  margin-left: -5px; /* 입력 필드와 조금 더 가깝게 */
+}
+
+/* 확정된 파일 이름 표시 스타일 */
+.file-name-display {
+  font-size: 18px;
+  flex-grow: 1;
+}
