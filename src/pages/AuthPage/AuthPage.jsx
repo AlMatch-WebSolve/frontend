@@ -55,11 +55,6 @@ function AuthPage() {
               </span>
             )}
           </div>
-          <Link to='/workspace'>
-            <button className={styles.tempLoginButton}>
-              (임시) 로그인 성공
-            </button>
-          </Link>
         </div>
       </div>
     </div>
