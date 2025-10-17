@@ -25,7 +25,7 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.formWrapper {
+.form-wrapper {
   width: 100%;
   max-width: 340px; /* 폼의 전체 최대 너비 설정 */
 }
@@ -57,7 +57,7 @@
   border-radius: 5px;
 }
 
-.stayLoggedIn {
+.stay-logged-in {
   display: flex;
   align-items: center;
   margin-top: 10px;
@@ -66,7 +66,7 @@
   color: #666666;
 }
 
-.stayLoggedIn input {
+.stay-logged-in input {
   margin-right: 5px;
 }
 .submit-button {
@@ -103,13 +103,4 @@
   font-weight: bold;
   cursor: pointer;
   border: none;
-}
-
-.tempLoginButton {
-  width: 100%;
-  background-color: #f2f9ff;
-  padding: 5px;
-  font-size: 16px;
-  font-weight: bold;
-  margin-top: 20px;
 }
