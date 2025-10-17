@@ -1,12 +1,12 @@
 /* 전체 컨테이너 스타일 */
-.landingContainer {
+.landing-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   background-color: #f2f9ff;
   height: 100vh;
-  width: 100vw;
+  width: 100%;
 }
 
 /* 슬로건 텍스트 스타일 */
@@ -18,7 +18,7 @@
 }
 
 /* 시작하기 버튼 (Call To Action) 스타일 */
-.ctaButton {
+.cta-button {
   /* 버튼 내부의 글자와 아이콘을 정중앙에 배치 */
   display: flex;
   align-items: center;
@@ -38,13 +38,13 @@
   transition: background-color 0.2s; /* 부드러운 호버 효과 */
 }
 
-.buttonLabel {
+.button-label {
   color: white;
   font-size: 40px; /* 이미지와 맞게 폰트 크기 조정 */
   font-weight: normal;
 }
 
-.buttonIcon {
+.button-icon {
   width: 30px;
   height: 30px;
 }
