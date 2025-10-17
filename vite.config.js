@@ -8,7 +8,7 @@ export default defineConfig({
     proxy: {
       '/api': {
         target:
-          'http://ec2-3-34-178-142.ap-northeast-2.compute.amazonaws.com:8080',
+          'http://ec2-3-39-239-40.ap-northeast-2.compute.amazonaws.com:8080',
         changeOrigin: true,
       },
     },

@@ -35,7 +35,7 @@ function AuthPage() {
               <span>
                 아직 계정이 없나요?{' '}
                 <button
-                  type="button"
+                  type='button'
                   onClick={toggleView}
                   className={styles.toggleButton}
                 >
@@ -46,7 +46,7 @@ function AuthPage() {
               <span>
                 이미 계정이 있나요?{' '}
                 <button
-                  type="button"
+                  type='button'
                   onClick={toggleView}
                   className={styles.toggleButton}
                 >
@@ -55,11 +55,6 @@ function AuthPage() {
               </span>
             )}
           </div>
-          <Link to="/workspace">
-            <button className={styles.tempLoginButton}>
-              (임시) 로그인 성공
-            </button>
-          </Link>
         </div>
       </div>
     </div>

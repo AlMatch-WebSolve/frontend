@@ -8,12 +8,16 @@ function ResultPanel() {
 
   return (
     <div className={styles.panel}>
-      <div className={styles.tabs} role="tablist" aria-label="테스트 결과/제출 결과">
+      <div
+        className={styles.tabs}
+        role='tablist'
+        aria-label='테스트 결과/제출 결과'
+      >
         <button
           role='tab'
           aria-selected={tab === 'test'}
-          aria-controls="panel-test"
-          id="tab-test"
+          aria-controls='panel-test'
+          id='tab-test'
           className={styles.tabBtn}
           onClick={() => setTab('test')}
         >
@@ -22,8 +26,8 @@ function ResultPanel() {
         <button
           role='tab'
           aria-selected={tab === 'submit'}
-          aria-controls="panel-submit"
-          id="tab-submit"
+          aria-controls='panel-submit'
+          id='tab-submit'
           className={styles.tabBtn}
           onClick={() => setTab('submit')}
         >
@@ -34,18 +38,18 @@ function ResultPanel() {
       <div className={styles.content}>
         {tab === 'test' ? (
           <section
-            role="tabpanel"
-            aria-labelledby="tab-test"
-            id="panel-test"
+            role='tabpanel'
+            aria-labelledby='tab-test'
+            id='panel-test'
             className={styles.fill}
           >
             <TestCaseResults />
           </section>
         ) : (
           <section
-            role="tabpanel"
-            aria-labelledby="tab-submit"
-            id="panel-submit"
+            role='tabpanel'
+            aria-labelledby='tab-submit'
+            id='panel-submit'
             className={styles.fill}
           >
             <SubmissionResult />
@@ -53,7 +57,7 @@ function ResultPanel() {
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default ResultPanel
+export default ResultPanel;

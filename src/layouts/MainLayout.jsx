@@ -17,7 +17,7 @@ const MainLayout = () => {
   }
 
   if (!isLoggedIn) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to='/auth' replace />;
   }
 
   return (
