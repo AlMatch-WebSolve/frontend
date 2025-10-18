@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import Draggable from 'react-draggable';
 import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 import styles from './ChatWindow.module.css';
 import CloseIcon from '../../../assets/icons/CloseIcon.svg';
 import SendIcon from '../../../assets/icons/SendIcon.svg';
@@ -45,9 +46,10 @@ function ChatWindow({ onClose }) {
         console.log('Health Check 성공:', healthText);
         setServerStatus('online'); // 서버가 정상임을 상태에 저장
 
+        const sock = new SockJS(`${API_BASE_URL}/ws`);
         // 2. Health Check 성공 시에만 WebSocket 연결 시도
         const client = new Client({
-          brokerURL: WEBSOCKET_URL,
+          webSocketFactory: () => sock,
           debug: (str) => {
             console.log(new Date(), str);
           },
