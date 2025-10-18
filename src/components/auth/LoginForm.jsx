@@ -15,14 +15,18 @@ function LoginForm() {
   const handleSubmit = async (e) => {
     e.preventDefault(); // 폼 제출 시 페이지가 새로고침되는 것을 방지합니다.
 
-    try {
-      await login(email, password, rememberMe);
+    // 1. AuthProvider의 login 함수를 호출하고 그 결과를 변수에 저장합니다.
+    const result = await login(email, password, rememberMe);
 
+    // 2. 반환된 결과 객체의 success 속성을 확인합니다.
+    if (result.success) {
+      // 3. 성공했을 때만 성공 알림을 띄우고 페이지를 이동합니다.
       alert('로그인에 성공했습니다!');
       navigate('/workspace');
-    } catch (error) {
-      console.error('로그인 에러:', error);
-      alert(error.response?.data?.message || '로그인에 실패했습니다.');
+    } else {
+      // 4. 실패했을 경우, 백엔드에서 보낸 에러 메시지를 사용자에게 보여줍니다.
+      // result.error 객체에 서버의 응답이 들어있습니다.
+      alert(result.error?.response?.data?.message || '로그인에 실패했습니다.');
     }
   };
 
