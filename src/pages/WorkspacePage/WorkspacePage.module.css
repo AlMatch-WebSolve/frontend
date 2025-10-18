@@ -100,3 +100,26 @@
   width: 100%;
   min-height: 500px; /* 필요에 따라 조정 */
 }
+
+.back-button {
+  width: 89px;
+  height: 34px;
+  font-size: 24px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  margin-top: 10px;
+  margin-left: 20px;
+  margin-bottom: 17px;
+}
+
+.current-folder-name {
+  width: 89px;
+  height: 34px;
+  font-size: 24px;
+  border: none;
+  background-color: transparent;
+  margin-top: 10px;
+  margin-left: 20px;
+  margin-bottom: 17px;
+}

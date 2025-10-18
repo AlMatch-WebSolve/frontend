@@ -16,16 +16,23 @@ function WorkspacePage() {
   const [IsModalOpen, setIsModalOpen] = useState(false);
   const [folders, setFolders] = useState([]);
   const [selectedProblems, setSelectedProblems] = useState([]);
-  const [selectedFolderId, setSelectedFolderId] = useState(null);
+  const [currentFolderId, setCurrentFolderId] = useState(null);
+
+  const handleFolderClick = (folderId) => {
+    setCurrentFolderId(folderId); // 클릭한 폴더를 현재 폴더로 설정
+  };
+
+  const handleBackToRoot = () => {
+    setCurrentFolderId(null); // 루트 레벨로 돌아가기
+  };
 
   // 새 폴더 버튼 클릭 핸들러
   const handleNewFolder = () => {
-    console.log('새 폴더 버튼 클릭 됨');
-    // 폴더 생성 로직 - 고유 ID와 편집 모드 추가
     const newFolder = {
       id: `folder-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       name: "새 폴더",
-      isEditing: true // 생성 시 이름 편집 모드로 시작
+      isEditing: true, // 생성 시 이름 편집 모드로 시작
+      parentId: currentFolderId // 현재 열린 폴더의 ID를 부모 ID로 설정
     };
     setFolders(prev => [...prev, newFolder]);
   };
@@ -57,13 +64,17 @@ function WorkspacePage() {
   };
 
   const handleSelectProblem = (problem) => {
-    // 선택한 문제에 고유 ID 추가
     const newProblem = {
       ...problem,
-      id: `problem-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` // 완전히 고유한 ID 생성
+      id: `problem-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      folderId: currentFolderId, // 현재 열린 폴더 ID 저장
+      isEditing: true // 새로 생성된 문제는 편집 모드로 시작
     };
-    setSelectedProblems(prev => [...prev, newProblem]); // newProblem 추가
+    setSelectedProblems(prev => [...prev, newProblem]);
+    setIsModalOpen(false);
   };
+
+
 
   return (
     <div className={styles.workSpaceBackground}>
@@ -72,7 +83,7 @@ function WorkspacePage() {
         <div className={styles.workSpaceButtonsHeaderContainer}>
           {/* 최근 항목 버튼 */}
           <span className={styles.workSpaceButtonsRecent}>최근 항목</span>
-
+  
           {/* 오른쪽 버튼(새 폴더, 문제 생성) */}
           <div className={styles.workSpaceButtons}>
             <button
@@ -90,50 +101,71 @@ function WorkspacePage() {
           </div>
         </div>
         <hr className={styles.workSpaceButtonsUnderline} />
-
+  
         {/* 메인 박스 컴포넌트 또는 선택된 문제 */}
         {selectedProblems.length > 0 || folders.length > 0 ? (
           <ul className={styles.folderList}>
-            {/* 폴더 목록 렌더링 - 맨 위에 배치 */}
-            {folders.map((folder, index) => (
-              <WorkSpaceFolderItem
-                key={folder.id}
-                id={folder.id}
-                initialName={folder.name}
-                isInitialEditing={folder.isEditing}
-                top={INITIAL_TOP + (index * ITEM_HEIGHT)}
-                left={INITIAL_LEFT}
-                onNameConfirm={(newName) => handleFolderNameConfirm(folder.id, newName)}
-                onDelete={() => handleDeleteFolder(folder.id)}
-              />
-            ))}
+            {/* 폴더 내부에 있을 때 표시할 헤더 */}
+            {currentFolderId && (
+              <div className={styles.folderHeader}>
+                <button onClick={handleBackToRoot} className={styles.backButton}>
+                  처음으로
+                </button>
+                <span className={styles.currentFolderName}>
+                  {`[${folders.find(f => f.id === currentFolderId)?.name || '폴더'}]`}
+                </span>
+              </div>
+            )}
             
-            {/* 문제 목록 렌더링 - 폴더 아래에 배치 */}
-            {selectedProblems.map((problem, index) => (
-              <WorkSpaceProblemList
-                key={problem.id}
-                id={problem.id}
-                initialTitle={problem.title}
-                selectedLanguage={problem.selectedLanguage}
-                top={INITIAL_TOP + (folders.length * ITEM_HEIGHT) + (index * ITEM_HEIGHT)} // 폴더 아래에 배치
-                left={INITIAL_LEFT}
-                onFileNameConfirm={(name) => {
-                  // 이름 변경 처리
-                  setSelectedProblems(prev => 
-                    prev.map(item => 
-                      item.id === problem.id 
-                        ? {...item, title: name} 
-                        : item
-                    )
-                  );
-                }}
-                onDelete={() => {
-                  console.log('삭제 요청된 ID:', problem.id);
-                  // ID로 삭제
-                  setSelectedProblems(prev => prev.filter(item => item.id !== problem.id));
-                }}
-              />
-            ))}
+            {/* 폴더 목록 렌더링 - 루트에서만 표시 */}
+            {folders
+              .filter(folder => folder.parentId === currentFolderId)
+              .map((folder, index) => (
+                <WorkSpaceFolderItem
+                  key={folder.id}
+                  id={folder.id}
+                  initialName={folder.name}
+                  isInitialEditing={folder.isEditing}
+                  top={INITIAL_TOP + (index * ITEM_HEIGHT)}
+                  left={INITIAL_LEFT}
+                  onNameConfirm={(newName) => handleFolderNameConfirm(folder.id, newName)}
+                  onDelete={() => handleDeleteFolder(folder.id)}
+                  onFolderClick={handleFolderClick}
+                />
+              ))}
+            
+            {/* 문제 목록 렌더링 - 현재 폴더에 맞게 필터링 */}
+            {selectedProblems
+              .filter(problem => 
+                currentFolderId === null 
+                  ? !problem.folderId 
+                  : problem.folderId === currentFolderId
+              )
+              .map((problem, index) => (
+                <WorkSpaceProblemList
+                  key={problem.id}
+                  id={problem.id}
+                  initialTitle={problem.title}
+                  selectedLanguage={problem.selectedLanguage}
+                  isInitialEditing={problem.isEditing} // 문제의 isEditing 상태를 prop으로 전달
+                  top={INITIAL_TOP + (currentFolderId === null ? folders.length * ITEM_HEIGHT : 0) + (index * ITEM_HEIGHT)}
+                  left={INITIAL_LEFT}
+                  onFileNameConfirm={(name) => {
+                    // 이름 변경 및 편집 상태 업데이트
+                    setSelectedProblems(prev => 
+                      prev.map(item => 
+                        item.id === problem.id 
+                          ? {...item, title: name, isEditing: false} // isEditing 상태를 false로 업데이트
+                          : item
+                      )
+                    );
+                  }}
+                  onDelete={() => {
+                    console.log('삭제 요청된 ID:', problem.id);
+                    setSelectedProblems(prev => prev.filter(item => item.id !== problem.id));
+                  }}
+                />
+              ))}
           </ul>
         ) : (
           <div className={styles.workSpaceBox}>
@@ -142,7 +174,7 @@ function WorkspacePage() {
             </div>
           </div>
         )}
-
+  
         {/* 문제 생성 모달 */}
         <WorkSpaceProblemModal
           isOpen={IsModalOpen}

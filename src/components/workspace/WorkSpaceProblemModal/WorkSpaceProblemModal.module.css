@@ -1,232 +1,232 @@
 /* 모달 배경 오버레이 */
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5); /* 반투명 검은색 배경 */
-    display: flex;
-    align-items: center; /* 수직 중앙 정렬 */
-    justify-content: center; /* 수평 중앙 정렬 */
-    z-index: 1000; /* 다른 요소들 위에 표시 */
-  }
-  
-  /* 모달 내용 컨테이너 */
-  .modal-content {
-    position: absolute;
-    top: 240px;
-    left: 510px;
-    background-color: #ffffff;
-    border: 1px solid #000000;
-    width: 900px;
-    height: 600px; /* 기존 HTML의 고정 높이 */
-    display: flex; /* 내부 요소 배치를 위해 flexbox 사용 */
-    flex-direction: column; /* 세로 방향으로 요소들을 배치 */
-    padding-bottom: 70px; /* 페이지네이션 공간 확보 (페이지네이션의 실제 높이에 따라 조정) */
-    border-radius: 5px;
-  }
-  
-  /* 모달 헤더 */
-  /* .modal-header {
-    width: auto;
-    height: 34px;
-    padding: 13px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 24px;
-  } */
-  
-  /* 알고리즘 문제 목록 */
-  .modal-title {
-    position: absolute;
-    width: 189px;
-    height: 34px;
-    top: 13px;
-    left: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 24px;
-  }
-  
-  /* 모달 닫기 버튼 */
-  .close-btn {
-    position: absolute; /* modal-content 기준으로 absolute 배치 */
-    top: 15px;
-    left: 850px;
-    display: flex;
-    width: 30px;
-    height: 30px;
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    z-index: 1001; /* 다른 요소들 위에 표시 */
-  }
-  .close-btn img {
-    width: 100%;
-    height: 100%;
-  }
-  
-  
-  /* 기존 모달 언더라인 CSS는 .modal-header의 border-bottom으로 대체됨 */
-  .modal-underline {
-    position: absolute;
-    width: 900px;
-    top: 60px;
-    border: none;
-    margin: 0;
-    border-bottom: 1px solid #000000;
-  }
-  
-  /* 모달 문제 검색 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* 반투명 검은색 배경 */
+  display: flex;
+  align-items: center; /* 수직 중앙 정렬 */
+  justify-content: center; /* 수평 중앙 정렬 */
+  z-index: 1000; /* 다른 요소들 위에 표시 */
+}
 
-  
-  .problem-search-input {
-        position: absolute;
-        width: 800px;
-        height: 40px;
-        top: 100px;
-        left: 50px;
-        /* font-size: 18px; */
-        /* padding-left: 10px; */
-        /* color: #999999; */
-        background-color: #F2F9FF;
-        border : none;
-  }
-  
-  #problemSearch::placeholder {
-      width: 71px;
-      height: 25px;
-      top: 7px;
-      left: 10px;
-      display: inline-block;
-      align-items: center;
-  }
-  
-  /* 검색창 X 버튼 제거 */
-  #problemSearch::-webkit-search-cancel-button {
-      -webkit-appearance: none;
-      appearance: none;
-      display: none;
-  }
-  
-  .search-button {
+/* 모달 내용 컨테이너 */
+.modal-content {
+  position: absolute;
+  top: 240px;
+  left: 510px;
+  background-color: #ffffff;
+  border: 1px solid #000000;
+  width: 900px;
+  height: 600px; /* 기존 HTML의 고정 높이 */
+  display: flex; /* 내부 요소 배치를 위해 flexbox 사용 */
+  flex-direction: column; /* 세로 방향으로 요소들을 배치 */
+  padding-bottom: 70px; /* 페이지네이션 공간 확보 (페이지네이션의 실제 높이에 따라 조정) */
+  border-radius: 5px;
+}
+
+/* 모달 헤더 */
+/* .modal-header {
+  width: auto;
+  height: 34px;
+  padding: 13px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 24px;
+} */
+
+/* 알고리즘 문제 목록 */
+.modal-title {
+  position: absolute;
+  width: 189px;
+  height: 34px;
+  top: 13px;
+  left: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 24px;
+}
+
+/* 모달 닫기 버튼 */
+.close-btn {
+  position: absolute; /* modal-content 기준으로 absolute 배치 */
+  top: 15px;
+  left: 850px;
+  display: flex;
+  width: 30px;
+  height: 30px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1001; /* 다른 요소들 위에 표시 */
+}
+.close-btn img {
+  width: 100%;
+  height: 100%;
+}
+
+
+/* 기존 모달 언더라인 CSS는 .modal-header의 border-bottom으로 대체됨 */
+.modal-underline {
+  position: absolute;
+  width: 900px;
+  top: 60px;
+  border: none;
+  margin: 0;
+  border-bottom: 1px solid #000000;
+}
+
+/* 모달 문제 검색 */
+
+
+.problem-search-input {
       position: absolute;
-      width: 24px;
-      height: 24px;
-      top: 108px; /* 검색창 세로 중앙 정렬 */
-      left: 816px; /* 오른쪽에 배치 */
-      cursor: pointer;
-      padding: 0;
-      background: none;
-      border: none;
-  }
-  .search-button img {
-      width: 100%;
-      height: 100%;
-  }
-  
-  
-  .problem-table {
-    position : absolute;
-    width: 800px;
-    height: 320px;
-    top: 160px;
-    left: 50px;
-    text-align: center;
-    border-left: none;
-    border-right: none;
-    border-collapse: collapse;
-  }
-  
-  .problem-table th,
-  .problem-table td {
-    border: 1px solid #666666;
-    padding: 10px 5px;
-    word-break: keep-all;
-  }
-  
-  .problem-table th {
-    font-size: 18px;
-    font-weight: normal;
-    height: 40px;
-    background-color: #f8f8f8; /* 헤더 배경색 */
-    &:nth-child(1) { width: 58px; }  /* 번호 */
-    &:nth-child(2) { width: 203px; } /* 문제 */
-    &:nth-child(3) { width: 100px; } /* 난이도 */
-    &:nth-child(4) { width: 321px; } /* 알고리즘 */
-    &:nth-child(5) { width: 114px; } 
-  }
-  
-  .problem-table td {
-    font-size: 16px;
-    height: 22px;
-    padding: 8px 20px;
-  }
-  
-  /* 테이블 양옆 라인 삭제 */
-  .problem-table th:first-child,
-  .problem-table td:first-child {
-      border-left: none;
-  }
-  .problem-table th:last-child,
-  .problem-table td:last-child {
-      border-right: none;
-  }
+      width: 800px;
+      height: 40px;
+      top: 100px;
+      left: 50px;
+      /* font-size: 18px; */
+      /* padding-left: 10px; */
+      /* color: #999999; */
+      background-color: #F2F9FF;
+      border : none;
+}
 
-  
-  /* 테이블 추가 버튼 */
-  .problem-add-btn {
-    width: 24px; /* 이미지 크기에 맞춰 버튼 크기 조정 */
+#problemSearch::placeholder {
+    width: 71px;
+    height: 25px;
+    top: 7px;
+    left: 10px;
+    display: inline-block;
+    align-items: center;
+}
+
+/* 검색창 X 버튼 제거 */
+#problemSearch::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+    display: none;
+}
+
+.search-button {
+    position: absolute;
+    width: 24px;
     height: 24px;
-    border: none;
-    background-color: transparent;
+    top: 108px; /* 검색창 세로 중앙 정렬 */
+    left: 816px; /* 오른쪽에 배치 */
     cursor: pointer;
     padding: 0;
-  }
-  .problem-add-btn img {
+    background: none;
+    border: none;
+}
+.search-button img {
     width: 100%;
     height: 100%;
-  }
+}
 
-  /* WorkSpaceProblemModal.module.css 파일에 추가 */
+
+.problem-table {
+  position : absolute;
+  width: 800px;
+  height: 320px;
+  top: 160px;
+  left: 50px;
+  text-align: center;
+  border-left: none;
+  border-right: none;
+  border-collapse: collapse;
+}
+
+.problem-table th,
+.problem-table td {
+  border: 1px solid #666666;
+  padding: 10px 5px;
+  word-break: keep-all;
+}
+
+.problem-table th {
+  font-size: 18px;
+  font-weight: normal;
+  height: 40px;
+  background-color: #f8f8f8; /* 헤더 배경색 */
+  &:nth-child(1) { width: 58px; }  /* 번호 */
+  &:nth-child(2) { width: 203px; } /* 문제 */
+  &:nth-child(3) { width: 100px; } /* 난이도 */
+  &:nth-child(4) { width: 321px; } /* 알고리즘 */
+  &:nth-child(5) { width: 114px; } 
+}
+
+.problem-table td {
+  font-size: 16px;
+  height: 22px;
+  padding: 8px 20px;
+}
+
+/* 테이블 양옆 라인 삭제 */
+.problem-table th:first-child,
+.problem-table td:first-child {
+    border-left: none;
+}
+.problem-table th:last-child,
+.problem-table td:last-child {
+    border-right: none;
+}
+
+
+/* 테이블 추가 버튼 */
+.problem-add-btn {
+  width: 24px; /* 이미지 크기에 맞춰 버튼 크기 조정 */
+  height: 24px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.problem-add-btn img {
+  width: 100%;
+  height: 100%;
+}
+
+/* WorkSpaceProblemModal.module.css 파일에 추가 */
 
 .searchInfo {
-    position: absolute; /* 👈 위치를 절대값으로 지정 */
-    top: 141px;  /* 👈 이 값을 조절해서 위아래 위치를 변경 (예: 검색창 바로 아래) */
-    left: 50px; /* 👈 이 값을 조절해서 좌우 위치를 변경 */
-    width: 200px;
-    height: 20px;
-    font-size: 16px;
-    color: #333;
+  position: absolute; /* 👈 위치를 절대값으로 지정 */
+  top: 141px;  /* 👈 이 값을 조절해서 위아래 위치를 변경 (예: 검색창 바로 아래) */
+  left: 50px; /* 👈 이 값을 조절해서 좌우 위치를 변경 */
+  width: 200px;
+  height: 20px;
+  font-size: 16px;
+  color: #333;
 }
 
 /* 언어 선택 부분 */
 
 .languageLabel {
-  display: flex;
-  position: absolute;
-  width: 78px;
-  height: 28px;
-  top: 489px;
-  left: 640px;
-  font-size: 20px;
-  align-items: center;
+display: flex;
+position: absolute;
+width: 78px;
+height: 28px;
+top: 489px;
+left: 640px;
+font-size: 20px;
+align-items: center;
 }
 
 .languageDropdown {
-  position: absolute;
-  width: 115px;
-  height: 28px;
-  top: 489px;
-  left: 735px;
-  font-size: 16px;
-  color: #ffffff;
-  background-color: #3B465E;
-  padding: 5px;
-  border-radius: 5px;
-  align-items: center;
+position: absolute;
+width: 115px;
+height: 28px;
+top: 489px;
+left: 735px;
+font-size: 16px;
+color: #ffffff;
+background-color: #3B465E;
+padding: 5px;
+border-radius: 5px;
+align-items: center;
 }

@@ -4,7 +4,7 @@ import styles from './WorkSpaceFolderItem.module.css';
 import FolderIcon from '../../../assets/icons/folder.svg';
 import DotsIcon from '../../../assets/icons/dot-horizontal.svg';
 
-const WorkSpaceFolderItem = ({ id, initialName, isInitialEditing, onNameConfirm, onDelete, top, left }) => {
+const WorkSpaceFolderItem = ({ id, initialName, isInitialEditing, onNameConfirm, onDelete, top, left, onFolderClick  }) => {
   const [isEditing, setIsEditing] = useState(isInitialEditing || false);
   const [name, setName] = useState(initialName || '');
   const [showDropdown, setShowDropdown] = useState(false);
@@ -73,11 +73,19 @@ const WorkSpaceFolderItem = ({ id, initialName, isInitialEditing, onNameConfirm,
     }
     setShowDropdown(false);
   };
+
+  const handleFolderClick = (e) => {
+    // 드롭다운이나 이름 편집 중에는 클릭 이벤트 무시
+    if (!isEditing && !dropdownRef.current?.contains(e.target)) {
+      onFolderClick(id);
+    }
+  };
   
   return (
     <li 
       className={styles['folder-item']} 
       style={{ top: `${top}px`, left: `${left}px` }}
+      onClick={handleFolderClick}
     >
       <span className={styles['folder-icon']}>
         <img src={FolderIcon} alt="폴더 아이콘" />
