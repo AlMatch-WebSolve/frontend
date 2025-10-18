@@ -92,8 +92,11 @@
 }
 
   /* folder-list 내의 모든 아이템에 적용될 기본 스타일 */
-.folder-list {
+.folderList {
   position: relative;
-  width: 1600px;
-  height: 60px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  min-height: 500px; /* 필요에 따라 조정 */
 }
