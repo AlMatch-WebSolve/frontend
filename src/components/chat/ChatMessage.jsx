@@ -13,7 +13,7 @@ const formatTimestamp = (timestamp) => {
       minute: '2-digit',
       hour12: true,
     });
-  } catch (error) {
+  } catch {
     console.error('Invalid timestamp format:', timestamp);
     return ''; // 변환 중 에러 발생 시 빈 문자열 반환
   }
