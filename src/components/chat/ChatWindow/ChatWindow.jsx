@@ -20,6 +20,9 @@ function ChatWindow({ onClose }) {
   const chatContainerRef = useRef(null);
   const clientRef = useRef(null); // STOMP 클라이언트 인스턴스를 저장하기 위한 ref
 
+  const reconnectAttempts = useRef(0); // 재연결 시도 횟수 추적
+  const MAX_RECONNECT_ATTEMPTS = 3; // 최대 재연결 시도 횟수
+
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isConnected, setIsConnected] = useState(false);
@@ -51,31 +54,52 @@ function ChatWindow({ onClose }) {
           reconnectDelay: 5000,
           heartbeatIncoming: 4000,
           heartbeatOutgoing: 4000,
+
+          onConnect: (frame) => {
+            setIsConnected(true);
+            console.log('STOMP 서버에 연결되었습니다:', frame);
+            reconnectAttempts.current = 0; // 성공 시 카운터 리셋
+
+            // 구독 및 JOIN 메시지 발행
+            client.subscribe('/topic/public', (message) => {
+              const receivedMessage = JSON.parse(message.body);
+              setMessages((prevMessages) => [...prevMessages, receivedMessage]);
+            });
+            const joinMessage = {
+              userId: MY_USER_ID,
+              userNickname: MY_NICKNAME,
+              message: `${MY_NICKNAME}님이 입장하셨습니다.`,
+              type: 'JOIN',
+            };
+            client.publish({
+              destination: '/app/chat.addUser',
+              body: JSON.stringify(joinMessage),
+            });
+          },
+
+          onStompError: (frame) => {
+            console.error('STOMP 오류:', frame.headers['message'], frame.body);
+          },
+
+          onDisconnect: (frame) => {
+            setIsConnected(false);
+            console.log('STOMP 서버와의 연결이 끊어졌습니다:', frame);
+
+            reconnectAttempts.current += 1;
+            console.log(
+              `재연결을 시도합니다... (${reconnectAttempts.current}/${MAX_RECONNECT_ATTEMPTS})`,
+            );
+            if (reconnectAttempts.current >= MAX_RECONNECT_ATTEMPTS) {
+              console.error(
+                '최대 재연결 횟수에 도달했습니다. 연결을 중단합니다.',
+              );
+              // 클라이언트를 비활성화하여 더 이상 자동 재연결을 시도하지 않도록 막습니다.
+              client.deactivate();
+              // 서버 상태를 'offline'으로 명확히 설정하여 사용자에게 알립니다.
+              setServerStatus('offline');
+            }
+          },
         });
-
-        client.onConnect = (frame) => {
-          setIsConnected(true);
-          console.log('STOMP 서버에 연결되었습니다:', frame);
-          // 구독 및 JOIN 메시지 발행
-          client.subscribe('/topic/public', (message) => {
-            const receivedMessage = JSON.parse(message.body);
-            setMessages((prevMessages) => [...prevMessages, receivedMessage]);
-          });
-          const joinMessage = {
-            userId: MY_USER_ID,
-            userNickname: MY_NICKNAME,
-            message: `${MY_NICKNAME}님이 입장하셨습니다.`,
-            type: 'JOIN',
-          };
-          client.publish({
-            destination: '/app/chat.addUser',
-            body: JSON.stringify(joinMessage),
-          });
-        };
-
-        client.onStompError = (frame) => {
-          console.error('STOMP 오류:', frame.headers['message'], frame.body);
-        };
 
         client.activate();
         clientRef.current = client;

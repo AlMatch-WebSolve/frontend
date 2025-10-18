@@ -10,11 +10,12 @@ function LandingPage() {
         AI와 함께하는 제일 스마트한 알고리즘 학습
       </h1>
 
-      {/* '/auth' 경로로 이동하는 버튼 */}
-      <Link to='/auth' className={styles.ctaButton}>
-        <span className={styles.buttonLabel}>시작하기</span>
-        <img src={NextIcon} alt='다음으로' className={styles.buttonIcon} />
+      {/* '/test' 경로로 이동하는 버튼 */}
+      <Link to='/test' className={styles.ctaButton}>
+        <span className={styles.buttonLabel}>채팅 소켓</span>
+        
       </Link>
+
     </div>
   );
 }
