@@ -51,9 +51,9 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const signup = useCallback(async (nickname, email, password) => {
+  const signup = useCallback(async (name, email, password) => {
     try {
-      await apiClient.post('/api/auth/signup', { nickname, email, password });
+      await apiClient.post('/api/auth/signup', { name, email, password });
       return { success: true };
     } catch (error) {
       console.error('회원가입 실패:', error);
