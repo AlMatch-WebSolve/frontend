@@ -7,22 +7,22 @@ import CloseIcon from '../../../assets/icons/CloseIcon.svg';
 import SendIcon from '../../../assets/icons/SendIcon.svg';
 import ChatMessage from '../ChatMessage';
 
+// --- 설정 (Configuration) ---
+// 상세 STOMP 로그를 보려면 이 값을 true로 변경하세요.
+const ENABLE_STOMP_DEBUG = false;
 const API_BASE_URL =
   'http://ec2-52-78-83-137.ap-northeast-2.compute.amazonaws.com:8080';
-const WEBSOCKET_URL =
-  'ws://ec2-52-78-83-137.ap-northeast-2.compute.amazonaws.com:8080/ws';
+const MAX_RECONNECT_ATTEMPTS = 3;
 
-// 임시 유저아이디, 닉네임  설정
-const MY_USER_ID = 123; // 예시: 현재 접속한 사용자의 ID
-const MY_NICKNAME = '나'; // 예시: 현재 접속한 사용자의 닉네임
+// --- 임시 사용자 정보 ---
+const MY_USER_ID = 123;
+const MY_NICKNAME = '나';
 
 function ChatWindow({ onClose }) {
   const nodeRef = useRef(null);
   const chatContainerRef = useRef(null);
   const clientRef = useRef(null); // STOMP 클라이언트 인스턴스를 저장하기 위한 ref
-
   const reconnectAttempts = useRef(0); // 재연결 시도 횟수 추적
-  const MAX_RECONNECT_ATTEMPTS = 3; // 최대 재연결 시도 횟수
 
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
@@ -31,105 +31,118 @@ function ChatWindow({ onClose }) {
   const [serverStatus, setServerStatus] = useState('checking');
 
   useEffect(() => {
-    // Health Check와 WebSocket 연결을 처리하는 비동기 함수
+    // A. 서버가 살아있는지 먼저 확인 (Health Check)
     const connectToServer = async () => {
       try {
-        // 1. HTTP GET 요청으로 서버 Health Check 수행
-        console.log('채팅 서버 상태를 확인합니다...');
+        console.log('1. Health Check starting...');
         const response = await fetch(`${API_BASE_URL}/api/chat/health`);
-
-        if (!response.ok) {
+        if (!response.ok)
           throw new Error(`Health check failed: ${response.status}`);
-        }
 
-        const healthText = await response.text();
-        console.log('Health Check 성공:', healthText);
-        setServerStatus('online'); // 서버가 정상임을 상태에 저장
-
-        const sock = new SockJS(`${API_BASE_URL}/ws`);
-        // 2. Health Check 성공 시에만 WebSocket 연결 시도
-        const client = new Client({
-          webSocketFactory: () => sock,
-          debug: (str) => {
-            console.log(new Date(), str);
-          },
-          reconnectDelay: 5000,
-          heartbeatIncoming: 4000,
-          heartbeatOutgoing: 4000,
-
-          onConnect: (frame) => {
-            setIsConnected(true);
-            console.log('STOMP 서버에 연결되었습니다:', frame);
-            reconnectAttempts.current = 0; // 성공 시 카운터 리셋
-
-            // 구독 및 JOIN 메시지 발행
-            client.subscribe('/topic/public', (message) => {
-              const receivedMessage = JSON.parse(message.body);
-              setMessages((prevMessages) => [...prevMessages, receivedMessage]);
-            });
-            const joinMessage = {
-              userId: MY_USER_ID,
-              userNickname: MY_NICKNAME,
-              message: `${MY_NICKNAME}님이 입장하셨습니다.`,
-              type: 'JOIN',
-            };
-            client.publish({
-              destination: '/app/chat.addUser',
-              body: JSON.stringify(joinMessage),
-            });
-          },
-
-          onStompError: (frame) => {
-            console.error('STOMP 오류:', frame.headers['message'], frame.body);
-          },
-
-          onDisconnect: (frame) => {
-            setIsConnected(false);
-            console.log('STOMP 서버와의 연결이 끊어졌습니다:', frame);
-
-            reconnectAttempts.current += 1;
-            console.log(
-              `재연결을 시도합니다... (${reconnectAttempts.current}/${MAX_RECONNECT_ATTEMPTS})`,
-            );
-            if (reconnectAttempts.current >= MAX_RECONNECT_ATTEMPTS) {
-              console.error(
-                '최대 재연결 횟수에 도달했습니다. 연결을 중단합니다.',
-              );
-              // 클라이언트를 비활성화하여 더 이상 자동 재연결을 시도하지 않도록 막습니다.
-              client.deactivate();
-              // 서버 상태를 'offline'으로 명확히 설정하여 사용자에게 알립니다.
-              setServerStatus('offline');
-            }
-          },
-        });
-
-        client.activate();
-        clientRef.current = client;
+        console.log('2. Health Check successful.');
+        setServerStatus('online');
       } catch (error) {
-        // 3. Health Check 실패 시
-        console.error('채팅 서버에 연결할 수 없습니다:', error);
-        setServerStatus('offline'); // 서버가 오프라인임을 상태에 저장
-        setIsConnected(false);
+        console.error('1a. Health Check failed. Aborting connection.', error);
+        setServerStatus('offline');
+        console.groupEnd(); // 에러 발생 시 그룹 닫기
+        return; // Health Check 실패 시 더 이상 진행하지 않음
       }
+
+      // B. Health Check 성공 시 STOMP 클라이언트 설정 및 활성화
+      const client = new Client({
+        webSocketFactory: () => new SockJS(`${API_BASE_URL}/ws`),
+        debug: (str) => {
+          if (ENABLE_STOMP_DEBUG) {
+            console.log(new Date(), str);
+          }
+        },
+        reconnectDelay: 5000,
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000,
+
+        onConnect: (frame) => {
+          console.log('3. STOMP Connected!', frame);
+          console.groupEnd(); // Connecting 그룹 닫기
+          console.groupCollapsed(`[ChatWindow] Connection Active 🟢`);
+          console.log('Subscribing to /topic/public and sending JOIN message.');
+          console.groupEnd();
+
+          setIsConnected(true);
+          reconnectAttempts.current = 0; // 연결 성공 시 재시도 횟수 초기화
+
+          // 구독 및 JOIN 메시지 발행
+          client.subscribe('/topic/public', (message) => {
+            const receivedMessage = JSON.parse(message.body);
+            console.log(
+              '✅ 서버로부터 받은 실제 메시지 객체:',
+              receivedMessage,
+            );
+            setMessages((prevMessages) => [...prevMessages, receivedMessage]);
+          });
+          const joinMessage = {
+            userId: MY_USER_ID,
+            userNickname: MY_NICKNAME,
+            message: `${MY_NICKNAME}님이 입장하셨습니다.`,
+            type: 'JOIN',
+          };
+          client.publish({
+            destination: '/app/chat.addUser',
+            body: JSON.stringify(joinMessage),
+          });
+        },
+
+        onStompError: (frame) => {
+          console.error('STOMP 오류:', frame.headers['message'], frame.body);
+          console.groupEnd(); // 에러 발생 시에도 그룹 닫기
+        },
+
+        onDisconnect: (frame) => {
+          setIsConnected(false);
+          console.warn('STOMP Disconnected.', frame);
+          reconnectAttempts.current += 1;
+
+          if (reconnectAttempts.current >= MAX_RECONNECT_ATTEMPTS) {
+            console.error('Max reconnect attempts reached. Stopping.');
+            client.deactivate();
+            setServerStatus('offline');
+          } else {
+            console.log(
+              `Attempting to reconnect... (${reconnectAttempts.current}/${MAX_RECONNECT_ATTEMPTS})`,
+            );
+          }
+        },
+      });
+
+      client.activate();
+      clientRef.current = client;
     };
 
     connectToServer();
 
-    // 컴포넌트 언마운트 시 정리 함수
+    // C. 컴포넌트가 사라질 때 실행되는 정리(Cleanup) 함수
     return () => {
-      if (clientRef.current && clientRef.current.connected) {
+      console.groupCollapsed(`[ChatWindow] Disconnecting... 🔴`);
+      const client = clientRef.current;
+      if (client && client.connected) {
+        console.log('Sending LEAVE message and deactivating client.');
+
         const leaveMessage = {
           userId: MY_USER_ID,
           userNickname: MY_NICKNAME,
           message: `${MY_NICKNAME}님이 퇴장하셨습니다.`,
           type: 'LEAVE',
         };
-        clientRef.current.publish({
+
+        client.publish({
           destination: '/app/chat.addUser',
           body: JSON.stringify(leaveMessage),
         });
-        clientRef.current.deactivate();
+
+        client.deactivate();
+      } else {
+        console.log('Client was not connected or already deactivated.');
       }
+      console.groupEnd();
     };
   }, []); // 마운트 시 한 번만 실행
 
@@ -141,7 +154,6 @@ function ChatWindow({ onClose }) {
     }
   }, [messages]);
 
-  // 메시지 전송 함수
   const handleSendMessage = () => {
     if (inputValue.trim() === '' || !clientRef.current?.connected) {
       alert('메시지를 입력해주세요 또는 연결 상태를 확인하세요.');
@@ -155,7 +167,6 @@ function ChatWindow({ onClose }) {
       type: 'CHAT',
     };
 
-    // 7. 메시지 발행 (서버로 전송)
     clientRef.current.publish({
       destination: '/app/chat.sendMessage',
       body: JSON.stringify(messageToSend),
