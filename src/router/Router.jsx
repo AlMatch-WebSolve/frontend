@@ -4,7 +4,6 @@ import LandingPage from '../pages/LandingPage/LandingPage';
 import AuthPage from '../pages/AuthPage/AuthPage';
 import WorkspacePage from '../pages/WorkspacePage/WorkspacePage';
 import SolvePage from '../pages/SolvePage/SolvePage';
-import SocketTestPage from '../pages/SocketTestPage/SocketTestPage';
 
 const Router = () => {
   return (
@@ -12,8 +11,7 @@ const Router = () => {
       <Routes>
         <Route path='/' element={<LandingPage />} />
         <Route path='/auth' element={<AuthPage />} />
-        <Route path='/test' element={<SocketTestPage />} />
-        
+
         <Route element={<MainLayout />}>
           <Route path='/workspace' element={<WorkspacePage />} />
           <Route path='/solve/:problemId' element={<SolvePage />} />
