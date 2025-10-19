@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = useCallback(async (email, password, rememberMe) => {
     try {
-      const response = await apiClient.post('/api/auth/login/', {
+      const response = await apiClient.post('/api/auth/login', {
         email,
         password,
         rememberMe,
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
 
   const signup = useCallback(async (nickname, email, password) => {
     try {
-      await apiClient.post('/api/auth/signup/', { nickname, email, password });
+      await apiClient.post('/api/auth/signup', { nickname, email, password });
       return { success: true };
     } catch (error) {
       console.error('회원가입 실패:', error);
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }) => {
   const value = useMemo(
     () => ({
       isLoggedIn,
-      user, 
+      user,
       loading,
       login,
       logout,
