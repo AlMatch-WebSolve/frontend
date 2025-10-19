@@ -7,7 +7,7 @@ import CloseIcon from '../../../assets/icons/CloseIcon.svg';
 import SendIcon from '../../../assets/icons/SendIcon.svg';
 import ChatMessage from '../ChatMessage';
 
-const WEBSOCKET_URL = '/ws';
+const WEBSOCKET_URL = import.meta.env.VITE_WS_URL || '/ws';
 const MAX_RECONNECT_ATTEMPTS = 3;
 
 function ChatWindow({ onClose, currentUser, serverStatus }) {
