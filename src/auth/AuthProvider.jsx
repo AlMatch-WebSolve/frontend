@@ -1,46 +1,78 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import apiClient from '../api/apiClient';
 import { AuthContext } from './AuthContext';
 
 export const AuthProvider = ({ children }) => {
-  // 사용자가 로그인했는지 여부를 상태로 관리
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
-        // 서버에 쿠키를 보내 현재 로그인 상태인지 확인
-        await apiClient.get('/api/auth/me'); // 서버의 상태 확인 API
+        const response = await apiClient.get('/api/auth/me');
         setIsLoggedIn(true);
+        setUser(response.data.user);
       } catch (error) {
         console.error('로그인 상태 확인 실패:', error);
         setIsLoggedIn(false);
+        setUser(null);
       } finally {
-        setLoading(false); // 상태 확인이 끝나면 로딩 종료
+        setLoading(false);
       }
     };
-
     checkLoginStatus();
   }, []); // 컴포넌트가 처음 마운트될 때만 실행
 
-  const login = async (email, password, rememberMe) => {
-    await apiClient.post('/api/auth/login', { email, password, rememberMe });
-    setIsLoggedIn(true);
-  };
+  const login = useCallback(async (email, password, rememberMe) => {
+    try {
+      const response = await apiClient.post('/api/auth/login', {
+        email,
+        password,
+        rememberMe,
+      });
+      setIsLoggedIn(true);
+      setUser(response.data.user); // 1. 로그인 성공 시 사용자 정보 저장
+      return { success: true };
+    } catch (error) {
+      console.error('로그인 실패:', error);
+      return { success: false, error };
+    }
+  }, []);
 
-  const logout = async () => {
-    await apiClient.post('/api/auth/logout');
-    setIsLoggedIn(false);
-  };
+  const logout = useCallback(async () => {
+    try {
+      await apiClient.post('/api/auth/logout');
+    } catch (error) {
+      console.error('로그아웃 API 호출 실패:', error);
+    } finally {
+      setIsLoggedIn(false);
+      setUser(null);
+    }
+  }, []);
 
-  const signup = async (name, email, password) => {
-    return apiClient.post('/api/auth/signup', { name, email, password });
-  };
+  const signup = useCallback(async (nickname, email, password) => {
+    try {
+      await apiClient.post('/api/auth/signup', { nickname, email, password });
+      return { success: true };
+    } catch (error) {
+      console.error('회원가입 실패:', error);
+      return { success: false, error };
+    }
+  }, []);
 
-  const value = { isLoggedIn, login, logout, signup, loading };
+  const value = useMemo(
+    () => ({
+      isLoggedIn,
+      user,
+      loading,
+      login,
+      logout,
+      signup,
+    }),
+    [isLoggedIn, user, loading, login, logout, signup],
+  );
 
-  // 첫 로그인 상태 확인이 끝나기 전까지는 로딩 화면을 보여줌
   if (loading) {
     return <div>로딩 중...</div>;
   }
