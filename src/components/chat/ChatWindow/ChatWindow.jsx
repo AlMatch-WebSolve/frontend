@@ -7,8 +7,7 @@ import CloseIcon from '../../../assets/icons/CloseIcon.svg';
 import SendIcon from '../../../assets/icons/SendIcon.svg';
 import ChatMessage from '../ChatMessage';
 
-const API_BASE_URL =
-  'http://ec2-52-78-83-137.ap-northeast-2.compute.amazonaws.com:8080';
+const WEBSOCKET_URL = '/ws';
 const MAX_RECONNECT_ATTEMPTS = 3;
 
 function ChatWindow({ onClose, currentUser, serverStatus }) {
@@ -38,7 +37,7 @@ function ChatWindow({ onClose, currentUser, serverStatus }) {
     console.groupCollapsed(groupLabel);
 
     const client = new Client({
-      webSocketFactory: () => new SockJS(`${API_BASE_URL}/ws`),
+      webSocketFactory: () => new SockJS(WEBSOCKET_URL),
       reconnectDelay: 5000,
       onConnect: () => {
         console.log('[STOMP] Connected!');
@@ -73,10 +72,16 @@ function ChatWindow({ onClose, currentUser, serverStatus }) {
             const isDuplicate = prev.some(
               (msg) => msg.timestamp === received.timestamp,
             );
-            if (isDuplicate) return prev;
-            return [...prev, received];
+            return isDuplicate ? prev : [...prev, received];
           });
         });
+      },
+
+      onStompError: (frame) => {
+        console.error(
+          `[STOMP Error] Broker reported error: ${frame.headers['message']}`,
+        );
+        console.error(`[STOMP Error] Additional details: ${frame.body}`);
       },
 
       onDisconnect: () => {
@@ -137,7 +142,7 @@ function ChatWindow({ onClose, currentUser, serverStatus }) {
       console.groupEnd(); // Cleanup 그룹 종료
       console.groupEnd(); // Effect 그룹 종료
     };
-  }, [currentUser.userId, currentUser.userNickname, serverStatus]);
+  }, [currentUser, serverStatus]);
 
   useEffect(() => {
     if (chatContainerRef.current) {

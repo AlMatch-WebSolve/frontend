@@ -3,9 +3,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import Header from '../components/common/Header/Header';
 import ChatWindow from '../components/chat/ChatWindow/ChatWindow';
 import { useAuth } from '../hooks/useAuth';
-
-const API_BASE_URL =
-  'http://ec2-52-78-83-137.ap-northeast-2.compute.amazonaws.com:8080';
+import apiClient from '../api/apiClient';
 
 const MainLayout = () => {
   const { isLoggedIn, loading, user } = useAuth(); // 인증 상태와 로딩 상태 가져오기
@@ -15,7 +13,7 @@ const MainLayout = () => {
   useEffect(() => {
     const checkServerHealth = async () => {
       try {
-        await fetch(`${API_BASE_URL}/api/chat/health`);
+        await apiClient.get('/api/chat/health');
         setServerStatus('online');
       } catch {
         setServerStatus('offline');
@@ -37,11 +35,9 @@ const MainLayout = () => {
   if (loading) {
     return <div>로딩 중...</div>;
   }
-
   if (!isLoggedIn) {
     return <Navigate to='/auth' replace />;
   }
-
   if (!user) {
     return <div>사용자 정보를 불러오는 중...</div>;
   }

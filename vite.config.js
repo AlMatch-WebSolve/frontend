@@ -14,6 +14,12 @@ export default defineConfig({
           'http://ec2-52-78-83-137.ap-northeast-2.compute.amazonaws.com:8080',
         changeOrigin: true,
       },
+      '/ws': {
+        target:
+          'http://ec2-52-78-83-137.ap-northeast-2.compute.amazonaws.com:8080',
+        ws: true,
+        changeOrigin: true,
+      },
     },
   },
   css: {
