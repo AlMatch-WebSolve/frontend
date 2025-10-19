@@ -5,7 +5,8 @@ import WorkSpaceProblemList from '../../components/workspace/WorkSpaceProblemLis
 import WorkSpaceFolderItem from '../../components/workspace/WorkSpaceFolderItem/WorkSpaceFolderItem.jsx';
 import '../../styles/global.css';
 import styles from './WorkspacePage.module.css';
-import { createFolder, deleteFolder, updateFolderName } from '../../api/folder.js';
+// import { createFolder, deleteFolder, updateFolderName } from '../../api/folder.js';
+import apiClient from '../../api/apiClient';
 
 // 아이템 높이와 초기 위치 설정
 const ITEM_HEIGHT = 0; // 아이템 높이
@@ -36,7 +37,8 @@ function WorkspacePage() {
         parentId: currentFolderId // 현재 열린 폴더의 ID를 부모 ID로 설정
       };
       
-      const createdFolder = await createFolder(folderData);
+      // const createdFolder = await createFolder(folderData);
+      const createdFolder = await apiClient.post('/api/workspace/folders', folderData);
       
       // API 응답으로 받은 데이터로 상태 업데이트
       const newFolder = {
@@ -64,7 +66,8 @@ function WorkspacePage() {
   // 폴더 이름 확정 핸들러
   const handleFolderNameConfirm = async (folderId, newName) => {
     try {
-      await updateFolderName(folderId, newName);
+      // await updateFolderName(folderId, newName);
+      await apiClient.put(`/api/workspace/folders/${folderId}`, { newName });
       setFolders(prev => 
         prev.map(folder => 
           folder.id === folderId 
@@ -81,7 +84,8 @@ function WorkspacePage() {
   // 폴더 삭제 핸들러
   const handleDeleteFolder = async (folderId) => {
     try {
-      await deleteFolder(folderId);
+      // await deleteFolder(folderId);
+      await apiClient.delete(`/api/workspace/folders/${folderId}`);
       setFolders(prev => prev.filter(folder => folder.id !== folderId));
     } catch (error) {
       alert('폴더 삭제에 실패했습니다.');
