@@ -125,7 +125,7 @@ function ChatWindow({ onClose }) {
           type: 'LEAVE',
         };
         clientRef.current.publish({
-          destination: '/app/chat.sendMessage',
+          destination: '/app/chat.addUser',
           body: JSON.stringify(leaveMessage),
         });
         clientRef.current.deactivate();
