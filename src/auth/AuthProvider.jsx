@@ -8,6 +8,14 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+      setIsLoggedIn(true);
+      setLoading(false);
+      return;
+    }
+
     const checkLoginStatus = async () => {
       try {
         console.log('1️⃣ [AuthProvider] 로그인 상태 확인을 시작합니다...');
@@ -37,6 +45,7 @@ export const AuthProvider = ({ children }) => {
       console.log('✅ 로그인 성공! API에서 받은 user 객체:', response.data);
       setIsLoggedIn(true);
       setUser(response.data);
+      localStorage.setItem('user', JSON.stringify(response.data));
       return { success: true };
     } catch (error) {
       console.error('로그인 실패:', error);
@@ -52,6 +61,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setIsLoggedIn(false);
       setUser(null);
+      localStorage.removeItem('user');
     }
   }, []);
 
