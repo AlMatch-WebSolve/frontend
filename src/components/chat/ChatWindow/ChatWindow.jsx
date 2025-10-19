@@ -14,11 +14,12 @@ const API_BASE_URL =
   'http://ec2-52-78-83-137.ap-northeast-2.compute.amazonaws.com:8080';
 const MAX_RECONNECT_ATTEMPTS = 3;
 
-// --- 임시 사용자 정보 ---
-const MY_USER_ID = 123;
-const MY_NICKNAME = '나';
+function ChatWindow({ onClose, currentUser }) {
+  console.log(
+    `%c[ChatWindow] Component Rendered at ${new Date().toLocaleTimeString()}`,
+    'color: dodgerblue; font-weight: bold;',
+  );
 
-function ChatWindow({ onClose }) {
   const nodeRef = useRef(null);
   const chatContainerRef = useRef(null);
   const clientRef = useRef(null); // STOMP 클라이언트 인스턴스를 저장하기 위한 ref
@@ -31,7 +32,11 @@ function ChatWindow({ onClose }) {
   const [serverStatus, setServerStatus] = useState('checking');
 
   useEffect(() => {
-    // A. 서버가 살아있는지 먼저 확인 (Health Check)
+    // 이 Effect 스코프에서만 사용할 client 변수를 선언합니다.
+    let client;
+    console.groupCollapsed(`[ChatWindow] Connecting... 🚀`);
+
+    // 서버가 살아있는지 먼저 확인 (Health Check)
     const connectToServer = async () => {
       try {
         console.log('1. Health Check starting...');
@@ -48,8 +53,9 @@ function ChatWindow({ onClose }) {
         return; // Health Check 실패 시 더 이상 진행하지 않음
       }
 
-      // B. Health Check 성공 시 STOMP 클라이언트 설정 및 활성화
-      const client = new Client({
+      // Health Check 성공 시 STOMP 클라이언트 설정 및 활성화
+      // new Client()를 지역 변수인 client에 할당합니다.
+      client = new Client({
         webSocketFactory: () => new SockJS(`${API_BASE_URL}/ws`),
         debug: (str) => {
           if (ENABLE_STOMP_DEBUG) {
@@ -80,9 +86,9 @@ function ChatWindow({ onClose }) {
             setMessages((prevMessages) => [...prevMessages, receivedMessage]);
           });
           const joinMessage = {
-            userId: MY_USER_ID,
-            userNickname: MY_NICKNAME,
-            message: `${MY_NICKNAME}님이 입장하셨습니다.`,
+            userId: currentUser.userId,
+            userNickname: currentUser.userNickname,
+            message: `${currentUser.userNickname}님이 입장하셨습니다.`,
             type: 'JOIN',
           };
           client.publish({
@@ -119,28 +125,35 @@ function ChatWindow({ onClose }) {
 
     connectToServer();
 
-    // C. 컴포넌트가 사라질 때 실행되는 정리(Cleanup) 함수
+    // 컴포넌트가 사라질 때 실행되는 정리(Cleanup) 함수
     return () => {
+      console.log(
+        `%c[ChatWindow] Cleanup function called at ${new Date().toLocaleTimeString()}`,
+        'color: red; font-weight: bold;',
+      );
       console.groupCollapsed(`[ChatWindow] Disconnecting... 🔴`);
-      const client = clientRef.current;
-      if (client && client.connected) {
-        console.log('Sending LEAVE message and deactivating client.');
 
-        const leaveMessage = {
-          userId: MY_USER_ID,
-          userNickname: MY_NICKNAME,
-          message: `${MY_NICKNAME}님이 퇴장하셨습니다.`,
-          type: 'LEAVE',
-        };
+      if (client) {
+        console.log('Deactivating client instance...');
 
-        client.publish({
-          destination: '/app/chat.addUser',
-          body: JSON.stringify(leaveMessage),
-        });
+        // LEAVE 메시지는 연결된 상태일 때만 보내는 것이 좋습니다.
+        if (client.connected) {
+          const leaveMessage = {
+            userId: currentUser.userId,
+            userNickname: currentUser.userNickname,
+            message: `${currentUser.userNickname}님이 퇴장하셨습니다.`,
+            type: 'LEAVE',
+          };
+          client.publish({
+            destination: '/app/chat.addUser',
+            body: JSON.stringify(leaveMessage),
+          });
+        }
 
         client.deactivate();
+        console.log('Deactivation command sent.');
       } else {
-        console.log('Client was not connected or already deactivated.');
+        console.log('No client instance to deactivate.');
       }
       console.groupEnd();
     };
@@ -161,8 +174,8 @@ function ChatWindow({ onClose }) {
     }
 
     const messageToSend = {
-      userId: MY_USER_ID,
-      userNickname: MY_NICKNAME,
+      userId: currentUser.userId,
+      userNickname: currentUser.userNickname,
       message: inputValue,
       type: 'CHAT',
     };
@@ -216,17 +229,22 @@ function ChatWindow({ onClose }) {
         <div ref={chatContainerRef} className={styles.chatBodyContainer}>
           <div className={styles.chatBody}>
             {messages.map((msg, index) => {
+              // timestamp가 고유하다는 보장이 없으므로, index를 조합하여 사용합니다.
+              const uniqueKey = msg.timestamp
+                ? `${msg.timestamp}-${index}`
+                : index;
+
               if (msg.type === 'JOIN' || msg.type === 'LEAVE') {
                 return (
-                  <div key={index} className={styles.systemMessage}>
+                  <div key={uniqueKey} className={styles.systemMessage}>
                     <span>{msg.message}</span>
                   </div>
                 );
               } else {
                 return (
                   <ChatMessage
-                    key={index}
-                    isMine={msg.userId === MY_USER_ID}
+                    key={uniqueKey}
+                    isMine={msg.userId === currentUser.userId}
                     nickname={msg.userNickname}
                     message={msg.message}
                     timestamp={msg.timestamp}

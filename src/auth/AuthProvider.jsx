@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const response = await apiClient.get('/api/auth/me');
         setIsLoggedIn(true);
-        setUser(response.data.user);
+        setUser(response.data);
       } catch (error) {
         console.error('로그인 상태 확인 실패:', error);
         setIsLoggedIn(false);
@@ -31,8 +31,9 @@ export const AuthProvider = ({ children }) => {
         password,
         rememberMe,
       });
+      console.log('✅ 로그인 성공! API에서 받은 user 객체:', response.data);
       setIsLoggedIn(true);
-      setUser(response.data.user); // 1. 로그인 성공 시 사용자 정보 저장
+      setUser(response.data);
       return { success: true };
     } catch (error) {
       console.error('로그인 실패:', error);
