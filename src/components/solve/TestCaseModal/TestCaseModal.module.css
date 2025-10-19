@@ -1,5 +1,3 @@
-/* testcase-modal.module.css */
-
 /* 모달 뒷배경 (어둡게) */
 .modal-overlay {
   position: fixed;
@@ -11,160 +9,187 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 100;
+  z-index: 1000;
 }
 
-/* 모달 본체 (흰색 박스) */
+/* 모달 본체 */
 .modal-container {
-  width: 650px; /* 너비는 조절하세요 */
+  width: 900px;
+  height: 560px;
   background-color: white;
-  border-radius: 8px;
+  border-radius: 5px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  max-height: 85vh; /* 화면 높이를 넘지 않도록 */
+  position: relative;
+  margin: 20px;
+  box-sizing: border-box;
+  max-height: 85vh;
+  overflow-y: auto;
 }
 
-/* 모달 헤더 (제목, 닫기 버튼) */
+.modal-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* 모달 헤더 */
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
-  border-bottom: 1px solid #e9ecef; /* 구분선 */
+  padding: 20px;
+  height: 60px;
 }
 
 .modal-title {
-  font-size: 1.125rem; /* 18px */
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: regular;
 }
 
 .close-button {
   background: none;
   border: none;
-  font-size: 1.5rem; /* 24px */
-  color: #868e96;
+  font-size: 30px;
   cursor: pointer;
 }
-.close-button:hover {
-  color: #343a40;
+
+.header-divider {
+  width: 100%;
+  height: 1px;
+  background-color: #000000;
 }
 
-/* 모달 본문 (스크롤되는 영역) */
+/* 모달 바디 */
 .modal-body {
-  padding: 24px;
-  overflow-y: auto; /* 테스트케이스 많아지면 스크롤 */
-  flex-grow: 1; /* 남는 공간 채우기 */
+  display: flex;
+  flex-direction: column;
+  padding: 20px 50px;
+  flex-grow: 1;
 }
 
-/* 테스트케이스 1개 아이템 */
+/* 테스트케이스 아이템 */
 .testcase-item {
-  margin-bottom: 20px;
-}
-.testcase-item:last-child {
-  margin-bottom: 0;
-}
-
-/* 아이템 헤더 (테스트 1, [+][-]) */
-.item-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+  flex-direction: column;
+  border-radius: 6px;
 }
-
 .item-title {
-  font-size: 0.9rem; /* 14.4px */
-  font-weight: 500;
-  color: #495057;
+  font-size: 20px;
+  margin-bottom: 10px;
 }
 
-.item-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-/* 요청하신 [+][-] 아이콘 버튼 */
-.icon-button {
-  width: 26px;
-  height: 26px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  background-color: white;
-  color: #495057;
-  cursor: pointer;
-}
-.icon-button:hover {
-  background-color: #f8f9fa;
-}
-
-/* 입력 / 출력 영역 */
+/* 입력/출력 영역 */
 .io-container {
   display: flex;
-  gap: 16px; /* 입력과 출력 사이 간격 */
+  gap: 40px;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
+/* vertical divider */
+.io-divider {
+  height: 0.5px;
+  background-color: #000000;
+}
+
+/* 입력/출력 그룹 */
 .io-group {
-  flex: 1; /* 1:1 비율로 공간 차지 */
+  width: 380px;
   display: flex;
   flex-direction: column;
 }
 
 .io-label {
-  font-size: 0.875rem; /* 14px */
-  font-weight: 500;
-  margin-bottom: 8px;
+  font-size: 18px;
+  margin-bottom: 5px;
 }
 
 .io-textarea {
-  width: 100%;
-  height: 120px; /* 스크린샷과 유사한 높이 */
-  border: 1px solid #ced4da;
-  border-radius: 4px;
+  width: 380px;
+  height: 80px;
+  border: 1px solid #666666;
+  background-color: #f2f9ff;
   padding: 10px;
-  resize: vertical; /* 세로 크기 조절만 허용 */
-  box-sizing: border-box; /* 패딩/보더가 너비에 포함되도록 */
-  font-family: inherit;
+  resize: none;
 }
 
-/* 모달 푸터 (AI 추가, 저장 버튼) */
-.modal-footer {
+/* + - 버튼 */
+.item-buttons {
   display: flex;
-  justify-content: flex-end; /* 버튼 오른쪽 정렬 */
-  gap: 12px;
-  padding: 16px 24px;
-  border-top: 1px solid #e9ecef;
+  gap: 5px;
+  margin-top: 10px;
+  justify-content: flex-end;
 }
 
-/* 기본 버튼 스타일 */
-.button {
-  padding: 8px 14px;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 600;
+/* 아이콘 버튼 */
+.icon-button {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  border: 1px solid #666666;
+  border-radius: 2px;
   cursor: pointer;
 }
 
-/* AI 버튼 (파란색 테두리) */
-.ai-button {
-  color: #0d6efd; /* 스크린샷의 파란색 */
-  background-color: white;
-  border: 1px solid #0d6efd;
-}
-.ai-button:hover {
-  background-color: #f8faff;
+.icon-button img {
+  width: 18px;
+  height: 18px;
+  color: #666666;
 }
 
-/* 저장 버튼 (파란색 채움) */
-.save-button {
-  color: white;
-  background-color: #0d6efd;
-  border: 1px solid #0d6efd;
+.icon-button:hover {
+  background-color: #f2f9ff;
 }
+
+/* 모달 푸터 */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-right: 50px;
+  padding-bottom: 20px;
+}
+
+/* 버튼 */
+.button {
+  height: 30px;
+  padding: 4px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: none;
+}
+
+.ai-button {
+  font-size: 16px;
+  color: #4397f3;
+  background-color: #f2f9ff;
+  border: 1px solid #4397f3;
+
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 5px;
+}
+
+.ai-button img {
+  width: 24px;
+  height: 24px;
+}
+
+.ai-button:hover {
+  color: #3b465e;
+  border: 1px solid #3b465e;
+}
+
+.save-button {
+  font-size: 16px;
+  color: white;
+  background-color: #4397f3;
+}
+
 .save-button:hover {
-  background-color: #0b5ed7;
+  color: white;
+  background-color: #3b465e;
 }
