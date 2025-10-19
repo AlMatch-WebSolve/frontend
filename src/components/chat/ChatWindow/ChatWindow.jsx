@@ -8,9 +8,9 @@ import SendIcon from '../../../assets/icons/SendIcon.svg';
 import ChatMessage from '../ChatMessage';
 
 const API_BASE_URL =
-  'http://ec2-3-39-239-40.ap-northeast-2.compute.amazonaws.com:8080';
+  'http://ec2-52-78-83-137.ap-northeast-2.compute.amazonaws.com:8080';
 const WEBSOCKET_URL =
-  'ws://ec2-3-39-239-40.ap-northeast-2.compute.amazonaws.com:8080/ws';
+  'ws://ec2-52-78-83-137.ap-northeast-2.compute.amazonaws.com:8080/ws';
 
 // 임시 유저아이디, 닉네임  설정
 const MY_USER_ID = 123; // 예시: 현재 접속한 사용자의 ID
