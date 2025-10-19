@@ -10,11 +10,14 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
+        console.log('1️⃣ [AuthProvider] 로그인 상태 확인을 시작합니다...');
         const response = await apiClient.get('/api/auth/me');
+        console.log('2️⃣ [AuthProvider] /me API 응답 성공:', response);
+
         setIsLoggedIn(true);
         setUser(response.data);
       } catch (error) {
-        console.error('로그인 상태 확인 실패:', error);
+        console.error('2️⃣-a [AuthProvider] /me API 응답 실패:', error);
         setIsLoggedIn(false);
         setUser(null);
       } finally {
@@ -73,6 +76,12 @@ export const AuthProvider = ({ children }) => {
     }),
     [isLoggedIn, user, loading, login, logout, signup],
   );
+
+  console.log('3️⃣ [AuthProvider] Context로 전달할 최종 값:', {
+    isLoggedIn,
+    user,
+    loading,
+  });
 
   if (loading) {
     return <div>로딩 중...</div>;
