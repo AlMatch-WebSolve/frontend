@@ -8,13 +8,24 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+      setIsLoggedIn(true);
+      setLoading(false);
+      return;
+    }
+
     const checkLoginStatus = async () => {
       try {
+        console.log('1️⃣ [AuthProvider] 로그인 상태 확인을 시작합니다...');
         const response = await apiClient.get('/api/auth/me');
+        console.log('2️⃣ [AuthProvider] /me API 응답 성공:', response);
+
         setIsLoggedIn(true);
-        setUser(response.data.user);
+        setUser(response.data);
       } catch (error) {
-        console.error('로그인 상태 확인 실패:', error);
+        console.error('2️⃣-a [AuthProvider] /me API 응답 실패:', error);
         setIsLoggedIn(false);
         setUser(null);
       } finally {
@@ -31,8 +42,10 @@ export const AuthProvider = ({ children }) => {
         password,
         rememberMe,
       });
+      console.log('✅ 로그인 성공! API에서 받은 user 객체:', response.data);
       setIsLoggedIn(true);
-      setUser(response.data.user); // 1. 로그인 성공 시 사용자 정보 저장
+      setUser(response.data);
+      localStorage.setItem('user', JSON.stringify(response.data));
       return { success: true };
     } catch (error) {
       console.error('로그인 실패:', error);
@@ -48,6 +61,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setIsLoggedIn(false);
       setUser(null);
+      localStorage.removeItem('user');
     }
   }, []);
 
@@ -72,6 +86,12 @@ export const AuthProvider = ({ children }) => {
     }),
     [isLoggedIn, user, loading, login, logout, signup],
   );
+
+  console.log('3️⃣ [AuthProvider] Context로 전달할 최종 값:', {
+    isLoggedIn,
+    user,
+    loading,
+  });
 
   if (loading) {
     return <div>로딩 중...</div>;

@@ -6,14 +6,14 @@ const formatTimestamp = (timestamp) => {
   if (!timestamp) return '';
 
   try {
-    const date = new Date(timestamp);
+    const date = new Date(timestamp + 'Z');
     // 한국 시간 기준으로, 오전/오후를 포함한 2자리 시간과 분으로 변환
     return date.toLocaleTimeString('ko-KR', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: true,
     });
-  } catch (error) {
+  } catch {
     console.error('Invalid timestamp format:', timestamp);
     return ''; // 변환 중 에러 발생 시 빈 문자열 반환
   }
