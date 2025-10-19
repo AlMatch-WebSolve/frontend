@@ -12,6 +12,8 @@ const WorkSpaceProblemModal = ({ isOpen, onClose, onSelectProblem }) => {
   const [filteredProblems, setFilteredProblems] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('java') // 기본값을 Java로 설정
+  const [searchResultPage, setSearchResultPage] = useState(1);
+  const itemsPerPage = 6; // 페이지당 표시할 항목 수
   
   // 조건부 렌더링은 useState 이후에
   if (!isOpen) return null;
@@ -51,7 +53,10 @@ const WorkSpaceProblemModal = ({ isOpen, onClose, onSelectProblem }) => {
   
   // 현재 표시할 문제 목록 (검색 중이면 검색 결과, 아니면 현재 페이지 문제)
   const displayProblems = isSearching 
-    ? filteredProblems 
+    ? filteredProblems.slice(
+        (searchResultPage - 1) * itemsPerPage, 
+        searchResultPage * itemsPerPage
+      ) 
     : currentProblems;
   
   // 이전 페이지로 이동
@@ -104,12 +109,13 @@ const WorkSpaceProblemModal = ({ isOpen, onClose, onSelectProblem }) => {
     // 검색 모드 활성화
     setIsSearching(true);
     setSearchTerm(term);
+    setSearchResultPage(1); // 검색할 때마다 첫 페이지로 초기화
     
     // 모든 페이지의 문제를 검색
     const results = [];
     problemsByPage.forEach(page => {
       page.forEach(problem => {
-        // 번호, 제목, 난이도, 알고리즘 중 하나라도 검색어를 포함하면 결과에 추가
+        // 검색 로직은 그대로 유지
         if (
           problem.no.toString().includes(term) ||
           problem.title.toLowerCase().includes(term.toLowerCase()) ||
@@ -122,6 +128,20 @@ const WorkSpaceProblemModal = ({ isOpen, onClose, onSelectProblem }) => {
     });
     
     setFilteredProblems(results);
+  };
+
+  // 검색 결과 페이지네이션 핸들러
+  const handleSearchPrevPage = () => {
+    if (searchResultPage > 1) {
+      setSearchResultPage(searchResultPage - 1);
+    }
+  };
+
+  const handleSearchNextPage = () => {
+    const maxPage = Math.ceil(filteredProblems.length / itemsPerPage);
+    if (searchResultPage < maxPage) {
+      setSearchResultPage(searchResultPage + 1);
+    }
   };
     // ---
   
@@ -189,30 +209,45 @@ const WorkSpaceProblemModal = ({ isOpen, onClose, onSelectProblem }) => {
 
         {/* 페이지네이션 (검색 중에는 숨김) */}
 
-        {!isSearching && (
-          <div className={styles.modalFooter}>
+        <div className={styles.modalFooter}>
+          {isSearching ? (
+            <Pagination 
+              currentPage={searchResultPage}
+              totalPages={Math.max(1, Math.ceil(filteredProblems.length / itemsPerPage))}
+              onPrevPage={handleSearchPrevPage}
+              onNextPage={handleSearchNextPage}
+            />
+          ) : (
             <Pagination 
               currentPage={currentPage}
               totalPages={totalPages}
               onPrevPage={handlePrevPage}
               onNextPage={handleNextPage}
             />
-            
-            {/* 언어 선택 부분 */}
-            <div className={styles.languageSelector}>
-              <span className={styles.languageLabel}>언어 선택</span>
-              <select 
-                value={selectedLanguage} 
-                onChange={(e) => setSelectedLanguage(e.target.value)}
-                className={styles.languageDropdown}
-              >
-                <option value="java">Java</option>
-                <option value="javascript">JavaScript</option>
-                <option value="python">Python</option>
-              </select>
+          )}
+          
+          {/* 검색 결과 정보 (검색 중에만 표시) */}
+          {isSearching && (
+            <div className={styles.searchInfo}>
+              검색 결과: {filteredProblems.length}개 
+              (페이지 {searchResultPage}/{Math.max(1, Math.ceil(filteredProblems.length / itemsPerPage))})
             </div>
+          )}
+          
+          {/* 언어 선택은 항상 표시 */}
+          <div className={styles.languageSelector}>
+            <span className={styles.languageLabel}>언어 선택</span>
+            <select 
+              value={selectedLanguage} 
+              onChange={(e) => setSelectedLanguage(e.target.value)}
+              className={styles.languageDropdown}
+            >
+              <option value="java">Java</option>
+              <option value="javascript">JavaScript</option>
+              <option value="python">Python</option>
+            </select>
           </div>
-        )}
+        </div>
 
         {/* 검색 결과 정보 (검색 중에만 표시) */}
         {isSearching && (
