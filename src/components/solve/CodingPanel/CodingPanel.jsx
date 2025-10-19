@@ -15,12 +15,16 @@ function CodingPanel({ onTabChange }) {
 
   return (
     <div className={panelClass}>
-      <div className={styles.tabs} role="tablist" aria-label="코드/AI 코드 리뷰">
+      <div
+        className={styles.tabs}
+        role='tablist'
+        aria-label='코드/AI 코드 리뷰'
+      >
         <button
           role='tab'
           aria-selected={tab === 'code'}
-          aria-controls="panel-code"
-          id="tab-code"
+          aria-controls='panel-code'
+          id='tab-code'
           className={`${styles.tabBtn} ${styles.tabBtnSpacing}`}
           onClick={() => setTab('code')}
         >
@@ -29,8 +33,8 @@ function CodingPanel({ onTabChange }) {
         <button
           role='tab'
           aria-selected={tab === 'review'}
-          aria-controls="panel-review"
-          id="tab-review"
+          aria-controls='panel-review'
+          id='tab-review'
           className={styles.tabBtn}
           onClick={() => setTab('review')}
         >
@@ -41,18 +45,18 @@ function CodingPanel({ onTabChange }) {
       <div className={styles.content}>
         {tab === 'code' ? (
           <section
-            role="tabpanel"
-            aria-labelledby="tab-code"
-            id="panel-code"
+            role='tabpanel'
+            aria-labelledby='tab-code'
+            id='panel-code'
             className={styles.fill}
           >
             <CodeEditor />
           </section>
         ) : (
           <section
-            role="tabpanel"
-            aria-labelledby="tab-review"
-            id="panel-review"
+            role='tabpanel'
+            aria-labelledby='tab-review'
+            id='panel-review'
             className={styles.fill}
           >
             <AiReviewView />
@@ -60,7 +64,7 @@ function CodingPanel({ onTabChange }) {
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default CodingPanel
+export default CodingPanel;
