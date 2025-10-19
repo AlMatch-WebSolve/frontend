@@ -5,6 +5,7 @@ import WorkSpaceProblemList from '../../components/workspace/WorkSpaceProblemLis
 import WorkSpaceFolderItem from '../../components/workspace/WorkSpaceFolderItem/WorkSpaceFolderItem.jsx';
 import '../../styles/global.css';
 import styles from './WorkspacePage.module.css';
+import { createFolder, deleteFolder, updateFolderName } from '../../api/folder.js';
 
 // 아이템 높이와 초기 위치 설정
 const ITEM_HEIGHT = 0; // 아이템 높이
@@ -27,30 +28,65 @@ function WorkspacePage() {
   };
 
   // 새 폴더 버튼 클릭 핸들러
-  const handleNewFolder = () => {
-    const newFolder = {
-      id: `folder-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      name: "새 폴더",
-      isEditing: true, // 생성 시 이름 편집 모드로 시작
-      parentId: currentFolderId // 현재 열린 폴더의 ID를 부모 ID로 설정
-    };
-    setFolders(prev => [...prev, newFolder]);
+  const handleNewFolder = async () => {
+    try {
+      // API 호출로 새 폴더 생성
+      const folderData = {
+        name: "새 폴더",
+        parentId: currentFolderId // 현재 열린 폴더의 ID를 부모 ID로 설정
+      };
+      
+      const createdFolder = await createFolder(folderData);
+      
+      // API 응답으로 받은 데이터로 상태 업데이트
+      const newFolder = {
+        id: createdFolder.id,
+        name: createdFolder.name,
+        isEditing: true, // 생성 시 이름 편집 모드로 시작
+        parentId: createdFolder.parentId
+      };
+      
+      setFolders(prev => [...prev, newFolder]);
+    } catch (error) {
+      alert('폴더 생성에 실패했습니다.');
+      console.error(error);
+    }
   };
+  //   const newFolder = {
+  //     id: `folder-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+  //     name: "새 폴더",
+  //     isEditing: true, // 생성 시 이름 편집 모드로 시작
+  //     parentId: currentFolderId // 현재 열린 폴더의 ID를 부모 ID로 설정
+  //   };
+  //   setFolders(prev => [...prev, newFolder]);
+  // };
 
   // 폴더 이름 확정 핸들러
-  const handleFolderNameConfirm = (folderId, newName) => {
-    setFolders(prev => 
-      prev.map(folder => 
-        folder.id === folderId 
-          ? { ...folder, name: newName, isEditing: false } 
-          : folder
-      )
-    );
+  const handleFolderNameConfirm = async (folderId, newName) => {
+    try {
+      await updateFolderName(folderId, newName);
+      setFolders(prev => 
+        prev.map(folder => 
+          folder.id === folderId 
+            ? { ...folder, name: newName, isEditing: false } 
+            : folder
+        )
+      );
+    } catch (error) {
+      alert('폴더 이름 수정에 실패했습니다.');
+      console.error(error);
+    }
   };
 
   // 폴더 삭제 핸들러
-  const handleDeleteFolder = (folderId) => {
-    setFolders(prev => prev.filter(folder => folder.id !== folderId));
+  const handleDeleteFolder = async (folderId) => {
+    try {
+      await deleteFolder(folderId);
+      setFolders(prev => prev.filter(folder => folder.id !== folderId));
+    } catch (error) {
+      alert('폴더 삭제에 실패했습니다.');
+      console.error(error);
+    }
   };
 
   // 문제 생성 버튼 클릭 핸들러
