@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
 import SolveSidebar from '../../components/solve/SolveSidebar';
 import CodingPanel from '../../components/solve/CodingPanel/CodingPanel';
 import ResultPanel from '../../components/solve/ResultPanel/ResultPanel';
 import ProblemPanel from '../../components/problems/ProblemPanel/ProblemPanel';
 import styles from './SolvePage.module.css';
+import apiClient from '../../api/apiClient';
 
 function SolvePage() {
-  const { problemId, solutionId } = useParams();
   const [codingTab, setCodingTab] = useState('code');
+  const [resultActiveTab, setResultActiveTab] = useState('test');
+
+  const { problemId } = useParams();
+  const location = useLocation();
+  const solutionId = location.state?.solutionId ?? null;
+
+  const [problemErr, setProblemErr] = useState(null);
+  const [problemLoaded, setProblemLoaded] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -46,5 +55,4 @@ function SolvePage() {
     </div>
   );
 }
-
 export default SolvePage;

@@ -14,13 +14,26 @@ function WorkspacePage() {
   const [problems, setProblems] = useState([]);
   const [selectedFolderId, setSelectedFolderId] = useState(null);
 
+  // 파일명 변경/삭제 핸들러
+  const handleSolutionRename = (uiId, newName) => {
+    const name = (newName ?? '').trim();
+    if (!name) return;
+    setProblems(prev =>
+      prev.map(p => (p.id === uiId ? { ...p, title: name } : p))
+    );
+  };
+
+  const handleDeleteSolution = (uiId) => {
+    setProblems(prev => prev.filter(p => p.id !== uiId));
+  };
+
   const [dragOverFolderId, setDragOverFolderId] = useState(null);
   const [hoverDropIndex, setHoverDropIndex] = useState(null);
   const [dragMeta, setDragMeta] = useState(null);
 
   const DRAG_MIME = 'application/json';
 
-  /** 유틸: 맵/헬퍼 */
+  /* 유틸: 맵/헬퍼 */
   const folderMap = useMemo(() => {
     const m = new Map();
     folders.forEach(f => m.set(f.id, f));
@@ -38,7 +51,7 @@ function WorkspacePage() {
   };
   const getProblemDepth = (p) => (p.folderId ? getFolderDepth(p.folderId) + 1 : 0);
 
-  /** 통합 리스트: order 기준 */
+  /* 통합 리스트: order 기준 */
   const unified = useMemo(() => {
     const all = [
       ...folders.map(f => ({ ...f, _kind: 'folder' })),
@@ -47,7 +60,7 @@ function WorkspacePage() {
     return all.sort((a, b) => (a.order ?? a.createdAt ?? 0) - (b.order ?? b.createdAt ?? 0));
   }, [folders, problems]);
 
-  /** 드롭존 컨텍스트(parent)를 미리 계산 (각 gap의 부모가 누구인지) */
+  /* 드롭존 컨텍스트(parent)를 미리 계산 (각 gap의 부모가 누구인지) */
   const dropContexts = useMemo(() => {
     // 전략: gap i(0..N)는 "gap 뒤에 오는 아이템"의 부모를 따른다.
     // gap N(마지막)은 "마지막 아이템의 부모"를 따른다. 없으면 루트(null).
@@ -68,7 +81,7 @@ function WorkspacePage() {
     return ctx; // { parentId }
   }, [unified]);
 
-  /** 조상-자손 체크(폴더 기준) */
+  /* 조상-자손 체크(폴더 기준) */
   const isAncestorFolder = (ancestorId, folderId) => {
     if (!ancestorId || !folderId) return false;
     let cur = folderMap.get(folderId)?.parentId ?? null;
@@ -79,7 +92,7 @@ function WorkspacePage() {
     return false;
   };
 
-  /** 아이템이 특정 폴더의 자손인가 (폴더/파일 모두) */
+  /* 아이템이 특정 폴더의 자손인가 (폴더/파일 모두) */
   const isDescendantOfFolder = (item, folderId) => {
     if (!folderId) return false;
     let parent = item._kind === 'folder' ? item.parentId : item.folderId;
@@ -90,7 +103,7 @@ function WorkspacePage() {
     return false;
   };
 
-  /** 폴더의 서브트리 블록 인덱스 범위 수집 (통합 리스트 기준, 연속 블록) */
+  /* 폴더의 서브트리 블록 인덱스 범위 수집 (통합 리스트 기준, 연속 블록) */
   const collectSubtreeRange = (items, folderId) => {
     const start = items.findIndex(x => x._kind === 'folder' && x.id === folderId);
     if (start < 0) return null;
@@ -105,10 +118,10 @@ function WorkspacePage() {
     return { start, end }; // [start..end] inclusive
   };
 
-  /** 순서 재부여 */
+  /* 순서 재부여 */
   const reassignOrder = (items) => items.map((it, idx) => ({ ...it, order: idx }));
 
-  /** 공통: 드래그 시작 */
+  /* 공통: 드래그 시작 */
   const handleDragStart = (type, id, e) => {
     const payload = { type, id };
     setDragMeta(payload);
@@ -119,7 +132,7 @@ function WorkspacePage() {
   const findUnifiedIndex = (type, id) =>
     unified.findIndex(x => x._kind === type && x.id === id);
 
-  /** 사이 드롭존: 재정렬 + 부모 지정(컨텍스트) */
+  /* 사이 드롭존: 재정렬 + 부모 지정(컨텍스트) */
   const handleDragOverDropZone = (index, e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -193,7 +206,7 @@ function WorkspacePage() {
     />
   );
 
-  /** 폴더 위로 드롭: 그 폴더의 “첫 자식”으로 넣기 (바로 아래) */
+  /* 폴더 위로 드롭: 그 폴더의 “첫 자식”으로 넣기 (바로 아래) */
   const handleDragOverFolder = (targetFolderId, e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -269,7 +282,7 @@ function WorkspacePage() {
     setProblems(withOrder.filter(x => x._kind === 'problem').map(({ _kind, ...r }) => r));
   };
 
-  /** 루트 배경에 드롭: 루트로 빼기 */
+  /* 루트 배경에 드롭: 루트로 빼기 */
   const handleListDragOver = (e) => e.preventDefault();
   const handleListDropToRoot = (e) => {
     e.preventDefault();
@@ -302,7 +315,7 @@ function WorkspacePage() {
     setProblems(withOrder.filter(x => x._kind === 'problem').map(({ _kind, ...r }) => r));
   };
 
-  /** 새 폴더/문제 생성 (맨 아래로 append) */
+  /* 새 폴더/문제 생성 (맨 아래로 append) */
   const nextOrder = unified.length;
   const handleNewFolder = async () => {
     let parentId = selectedFolderId ?? null;
@@ -491,10 +504,6 @@ function WorkspacePage() {
                       onDragOver={(e) => handleDragOverFolder(item.id, e)}
                       onDragLeave={(e) => handleDragLeaveFolder(item.id, e)}
                       onDrop={(e) => handleDropOnFolder(item.id, e)}
-                      onDoubleClick={() => {
-                        if (!item.problemId) return;
-                        navigate(`/solve/${item.problemId}`, { state: { solutionId: item.solutionId ?? null } });
-                      }}
                     >
                       {/* 줄은 li.row::after가, 들여쓰기는 안쪽에서만 */}
                       <div className={styles.rowContent}>
@@ -538,6 +547,12 @@ function WorkspacePage() {
                           isInitialEditing={item.isEditing}
                           onFileNameConfirm={(name) => handleSolutionRename(item.id, name)}
                           onDelete={() => handleDeleteSolution(item.id)}
+                          onDoubleClick={() => {
+                            if (!item.problemId) return;
+                            navigate(`/solve/${item.problemId}`, {
+                              state: { solutionId: item.solutionId ?? null }
+                            });
+                          }}
                         />
                       </div>
                     </div>
