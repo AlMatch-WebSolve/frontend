@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import Header from '../components/common/Header/Header';
 import ChatWindow from '../components/chat/ChatWindow/ChatWindow';
-import SettingsModal from '../components/settings/SettingsModal';
 import { useAuth } from '../hooks/useAuth';
 import apiClient from '../api/apiClient';
 
@@ -10,10 +9,6 @@ const MainLayout = () => {
   const { isLoggedIn, loading, user } = useAuth(); // 인증 상태와 로딩 상태 가져오기
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [serverStatus, setServerStatus] = useState('checking');
-
-  const [open, setOpen] = useState(false);
-  const openSettings = () => setOpen(true);
-  const closeSettings = () => setOpen(false);
 
   useEffect(() => {
     const checkServerHealth = async () => {
@@ -49,7 +44,7 @@ const MainLayout = () => {
 
   return (
     <>
-      <Header onChatButtonClick={handleToggleChat} onSettingsClick={openSettings} />
+      <Header onChatButtonClick={handleToggleChat} />
       <main>
         {/* 이 부분에 WorkspacePage나 SolvePage가 렌더링 됩니다. */}
         <Outlet />
@@ -61,7 +56,6 @@ const MainLayout = () => {
           serverStatus={serverStatus}
         />
       )}
-      <SettingsModal open={open} onClose={closeSettings} />
     </>
   );
 };

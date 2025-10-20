@@ -4,7 +4,7 @@ import SettingIcon from '../../../assets/icons/SettingIcon.svg';
 import styles from '../Header/Header.module.css';
 import { Link } from 'react-router-dom';
 
-function Header({ onChatButtonClick, onSettingsClick }) {
+function Header({ onChatButtonClick }) {
   return (
     <header className={styles.header}>
       <div className={styles.headerContainer}>
@@ -24,7 +24,6 @@ function Header({ onChatButtonClick, onSettingsClick }) {
             type='button'
             aria-label='설정 열기'
             className={styles.navBtn}
-            onClick={onSettingsClick}
           >
             <img src={SettingIcon} alt='설정' />
           </button>
