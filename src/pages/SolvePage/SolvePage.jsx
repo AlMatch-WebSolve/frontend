@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import SolveSidebar from '../../components/solve/SolveSidebar';
+import SolveSidebar from '../../components/solve/SolveSidebar/SolveSidebar';
 import CodingPanel from '../../components/solve/CodingPanel/CodingPanel';
 import ResultPanel from '../../components/solve/ResultPanel/ResultPanel';
 import ProblemPanel from '../../components/problems/ProblemPanel/ProblemPanel';
