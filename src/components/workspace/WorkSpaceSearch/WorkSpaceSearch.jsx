@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styles from './WorkSpaceSearch.module.css';
-import SearchIcon from '../../../assets/icons/search-01.svg';
+import SearchIcon from '../../../assets/icons/SearchIcon.svg';
 
 
 const WorkSpaceSearch = ({ onSearch }) => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './WorkSpacePagination.module.css';
-import PrevIcon from '../../../assets/icons/prev-btn.svg';
-import NextIcon from '../../../assets/icons/next-btn.svg';
+import PrevIcon from '../../../assets/icons/PrevbtnIcon.svg';
+import NextIcon from '../../../assets/icons/NextbtnIcon.svg';
 
 const WorkSpacePagination = ({ currentPage, totalPages, onPrevPage, onNextPage }) => {
   return (

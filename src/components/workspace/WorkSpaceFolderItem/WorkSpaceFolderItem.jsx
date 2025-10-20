@@ -1,8 +1,8 @@
 // WorkSpaceFolderItem.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import styles from './WorkSpaceFolderItem.module.css';
-import FolderIcon from '../../../assets/icons/folder.svg';
-import DotsIcon from '../../../assets/icons/dot-horizontal.svg';
+import FolderIcon from '../../../assets/icons/FolderIcon.svg';
+import DotsIcon from '../../../assets/icons/DotsIcon.svg';
 
 const WorkSpaceFolderItem = ({ id, initialName, isInitialEditing, onNameConfirm, onDelete, top, left, onFolderClick }) => {
   const [isEditing, setIsEditing] = useState(isInitialEditing || false);

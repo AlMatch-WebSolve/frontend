@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styles from './WorkSpaceProblemList.module.css';
-import FileCodeIcon from '../../../assets/icons/file-code.svg';
-import DotsIcon from '../../../assets/icons/dot-horizontal.svg';
+import FileCodeIcon from '../../../assets/icons/FileIcon.svg';
+import DotsIcon from '../../../assets/icons/DotsIcon.svg';
 import apiClient from '../../../api/apiClient.js';
 
 // 언어별 확장자 매핑
