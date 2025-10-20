@@ -1,0 +1,46 @@
+/* 페이지네이션 컨테이너 */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* 페이지 정보 컨테이너 (버튼, 페이지 번호) */
+  .page-info {
+    font-size: 14px;
+    font: #000000;
+    white-space: nowrap;
+  }
+  
+  /* 페이지네이션 버튼 (이전/다음) */
+  .pagination-prev {
+    width: 24px;
+    height: 24px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+  .pagination-next {
+    width: 24px;
+    height: 24px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .pagination-info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    color: #333;
+  }
+
+  /* 버튼 비활성화 시 스타일 */
+  .pagination-prev:disabled,
+  .pagination-next:disabled {
+    cursor: not-allowed;
+    opacity: 0.5; /* 흐릿하게 표시 */
+  }

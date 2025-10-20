@@ -1,0 +1,161 @@
+/* 모달 배경 오버레이 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* 반투명 검은색 배경 */
+  display: flex;
+  align-items: center; /* 수직 중앙 정렬 */
+  justify-content: center; /* 수평 중앙 정렬 */
+  z-index: 1000; /* 다른 요소들 위에 표시 */
+}
+
+/* 모달 내용 컨테이너 */
+.modal-content {
+  background-color: #ffffff;
+  border: 1px solid #000000;
+  width: 900px;
+  height: 600px; /* 기존 HTML의 고정 높이 */
+  display: flex; /* 내부 요소 배치를 위해 flexbox 사용 */
+  flex-direction: column; /* 세로 방향으로 요소들을 배치 */
+  border-radius: 5px;
+}
+
+.modal-header {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 20px;
+  padding-right: 20px;
+  border-bottom: 1px solid #000000;
+}
+
+/* 알고리즘 문제 목록 */
+.modal-title {
+  font-size: 24px;
+}
+
+/* 모달 닫기 버튼 */
+.close-btn {
+  width: 30px;
+  height: 30px;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.close-btn img {
+  width: 100%;
+  height: 100%;
+}
+
+.content{
+  padding: 40px 50px;
+}
+
+.problem-table {
+  width: 800px;
+  height: 320px;
+  margin: 20px 0;
+  text-align: center;
+  border-left: none;
+  border-right: none;
+  border-collapse: collapse;
+}
+
+.problem-table th,
+.problem-table td {
+  border: 1px solid #666666;
+  padding: 10px 5px;
+  word-break: keep-all;
+}
+
+.problem-table th {
+  font-size: 18px;
+  font-weight: normal;
+  height: 40px;
+  background-color: #f2f9ff; /* 헤더 배경색 */
+  &:nth-child(1) { width: 130px; }
+  &:nth-child(2) { width: 200px; }
+  &:nth-child(3) { width: 125px; }
+  &:nth-child(4) { width: 240px; }
+  &:nth-child(5) { width: 101px; }
+  
+}
+
+.problem-table td {
+  font-size: 16px;
+  height: 22px;
+  padding: 8px 20px;
+}
+
+/* 테이블 양옆 라인 삭제 */
+.problem-table th:first-child,
+.problem-table td:first-child {
+    border-left: none;
+}
+.problem-table th:last-child,
+.problem-table td:last-child {
+    border-right: none;
+}
+
+
+/* 테이블 추가 버튼 */
+.problem-add-btn {
+  width: 24px; /* 이미지 크기에 맞춰 버튼 크기 조정 */
+  height: 24px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.problem-add-btn img {
+  width: 100%;
+  height: 100%;
+}
+
+.modal-footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 142px;
+}
+
+.search-info {
+  width: 200px;
+  height: 20px;
+  font-size: 16px;
+  color: #333;
+}
+
+/* 언어 선택 부분 */
+.language-selector {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 20px;
+}
+.language-label {
+  display: flex;
+  width: 78px;
+  height: 28px;
+  font-size: 20px;
+  align-items: center;
+}
+
+.language-dropdown {
+  width: 115px;
+  height: 28px;
+  font-size: 16px;
+  color: #ffffff;
+  background-color: #3B465E;
+  padding: 5px;
+  border-radius: 5px;
+  align-items: center;
+}

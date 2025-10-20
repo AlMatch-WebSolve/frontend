@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import TestCaseResults from '../TestCaseResults';
-import SubmissionResult from '../SubmissionResult';
+import TestCaseResults from '../TestCaseResults/TestCaseResults';
+import SubmissionResult from '../SubmissinResult/SubmissionResult';
 import styles from './ResultPanel.module.css';
 
 function ResultPanel() {
