@@ -25,11 +25,6 @@
   margin: 20px;
   box-sizing: border-box;
   max-height: 85vh;
-  overflow-y: auto;
-}
-
-.modal-container::-webkit-scrollbar {
-  display: none;
 }
 
 /* 모달 헤더 */
@@ -39,6 +34,7 @@
   align-items: center;
   padding: 20px;
   height: 60px;
+  border-bottom: 1px solid #000000;
 }
 
 .modal-title {
@@ -53,18 +49,17 @@
   cursor: pointer;
 }
 
-.header-divider {
-  width: 100%;
-  height: 1px;
-  background-color: #000000;
-}
-
 /* 모달 바디 */
 .modal-body {
   display: flex;
   flex-direction: column;
   padding: 20px 50px;
   flex-grow: 1;
+  overflow-y: auto;
+}
+
+.modal-body::-webkit-scrollbar {
+  display: none;
 }
 
 /* 테스트케이스 아이템 */
@@ -168,7 +163,7 @@
   background-color: #f2f9ff;
   border: 1px solid #4397f3;
 
-  display: inline-flex;
+  display: flex;
   align-items: center;
   padding: 3px 5px;
 }
@@ -178,18 +173,9 @@
   height: 24px;
 }
 
-.ai-button:hover {
-  color: #3b465e;
-  border: 1px solid #3b465e;
-}
-
 .save-button {
+  width: 58px;
   font-size: 16px;
   color: white;
   background-color: #4397f3;
-}
-
-.save-button:hover {
-  color: white;
-  background-color: #3b465e;
 }
