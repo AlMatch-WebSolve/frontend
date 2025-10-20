@@ -4,12 +4,14 @@ import CloseIcon from '../../../assets/icons/CloseIcon.svg';
 import PlusIcon from '../../../assets/icons/PlusIcon.svg';
 import MinusIcon from '../../../assets/icons/MinusIcon.svg';
 import AiPlusIcon from '../../../assets/icons/AiPlusIcon.svg';
+import apiClient from '../../../api/apiClient';
 
-function TestcaseModal({ onClose }) {
+function TestcaseModal({ onClose, solutionId }) {
   // 테스트케이스 목록을 상태로 관리
   const [testcases, setTestcases] = useState([
     { id: 1, input: '', output: '', name: '테스트 1' },
   ]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const bodyRef = useRef(null);
 
@@ -64,8 +66,54 @@ function TestcaseModal({ onClose }) {
 
     // 3. ID도 배열 순서대로 다시 매기기
     const finalList = reordered.map((tc, i) => ({ ...tc, id: i + 1 }));
-
     setTestcases(finalList);
+  };
+
+  // 입력/출력 변경 핸들러
+  const handleChange = (id, field, value) => {
+    setTestcases((prev) =>
+      prev.map((tc) => (tc.id === id ? { ...tc, [field]: value } : tc)),
+    );
+  };
+
+  // 저장 핸들러 (POST 요청)
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+
+      const payload = testcases.map(({ input, output }) => ({
+        input,
+        output,
+      }));
+
+      // const res = await apiClient.post(
+      //   `/api/solutions/${solutionId}/testcases`,
+      //   payload,
+      // );
+
+      // ${solutionId}
+      const res = await fetch(`/api/solutions/2741/testcases`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      console.log('✅ 저장 성공:', res.data);
+
+      onClose(); // 저장 후 닫기
+    } catch (error) {
+      console.error('❌ 저장 실패:', error);
+      alert('테스트케이스 저장 중 오류가 발생했습니다.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -88,12 +136,24 @@ function TestcaseModal({ onClose }) {
               <div className={styles.ioContainer}>
                 <div className={styles.ioGroup}>
                   <label className={styles.ioLabel}>입력</label>
-                  <textarea className={styles.ioTextarea} />
+                  <textarea
+                    className={styles.ioTextarea}
+                    value={tc.input}
+                    onChange={(e) =>
+                      handleChange(tc.id, 'input', e.target.value)
+                    }
+                  />
                 </div>
 
                 <div className={styles.ioGroup}>
                   <label className={styles.ioLabel}>출력</label>
-                  <textarea className={styles.ioTextarea} />
+                  <textarea
+                    className={styles.ioTextarea}
+                    value={tc.input}
+                    onChange={(e) =>
+                      handleChange(tc.id, 'input', e.target.value)
+                    }
+                  />
                 </div>
               </div>
 
@@ -121,8 +181,12 @@ function TestcaseModal({ onClose }) {
           >
             <img src={AiPlusIcon} alt='추가'></img> <p>AI 테스트케이스 추가</p>
           </button>
-          <button className={`${styles.button} ${styles.saveButton}`}>
-            저장
+          <button
+            className={`${styles.button} ${styles.saveButton}`}
+            onClick={handleSave}
+            disabled={isSaving}
+          >
+            {isSaving ? '저장 중...' : '저장'}
           </button>
         </div>
       </div>
