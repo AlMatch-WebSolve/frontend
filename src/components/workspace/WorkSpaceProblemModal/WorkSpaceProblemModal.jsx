@@ -211,13 +211,6 @@ const WorkSpaceProblemModal = ({ isOpen, onClose, onSelectProblem }) => {
               />
             )}
 
-            {/* 검색 결과 정보 */}
-            {isSearching && (
-              <div className={styles.searchInfo}>
-                검색 결과: {filteredProblems.length}개 (페이지 {searchResultPage}/
-                {Math.max(1, Math.ceil(filteredProblems.length / itemsPerPage))})
-              </div>
-            )}
 
             {/* 언어 선택 */}
             <div className={styles.languageSelector}>
@@ -235,10 +228,6 @@ const WorkSpaceProblemModal = ({ isOpen, onClose, onSelectProblem }) => {
           </div>
         </div>
 
-        {/* 검색 결과 정보 (검색 중에만 표시) */}
-        {isSearching && (
-          <div className={styles.searchInfo}>검색 결과: {filteredProblems.length}개</div>
-        )}
       </div>
     </div>
   );

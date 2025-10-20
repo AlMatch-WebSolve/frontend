@@ -24,6 +24,7 @@ const WorkSpaceProblemList = ({
   selectedLanguage,
   onDelete, // 부모에 삭제 반영 요청
   isInitialEditing = false,
+  onDoubleClick,
 }) => {
   const [fileName, setFileName] = useState(initialTitle || '');
   const [isEditing, setIsEditing] = useState(isInitialEditing);
@@ -32,6 +33,11 @@ const WorkSpaceProblemList = ({
 
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
+
+  const handleOpen = (e) => {
+    if (busy || isEditing) return;
+    onDoubleClick?.(e);
+  };
 
   // 편집 시작 시 자동 포커스
   useEffect(() => {
@@ -124,7 +130,6 @@ const WorkSpaceProblemList = ({
 
     setBusy(true);
     try {
-      // const res = await apiClient.delete(`/api/solutions/${solutionId}`);
       const res = await apiClient.delete(`/api/solutions/${String(solutionId).trim()}`);
       if (res.status !== 200) throw new Error(`파일 삭제 실패 (status: ${res.status})`);
       onDelete?.();
@@ -158,7 +163,14 @@ const WorkSpaceProblemList = ({
           disabled={busy}
         />
       ) : (
-        <div className={styles.fileNameContainer}>
+        <div
+          className={styles.fileNameContainer}
+          onDoubleClick={handleOpen}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleOpen(e); }}
+          title={fileName}
+        >
           <span className={styles.fileNameDisplay} title={fileName}>
             {fileName}
           </span>
@@ -167,7 +179,7 @@ const WorkSpaceProblemList = ({
             <button
               type="button"
               className={styles.dotsButton}
-              onClick={toggleDropdown}
+              onClick={(e) => { e.stopPropagation(); toggleDropdown(); }}
               aria-haspopup="menu"
               aria-expanded={showDropdown}
               aria-label="파일 메뉴 열기"
