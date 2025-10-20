@@ -2,7 +2,6 @@ import axios from 'axios';
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  // baseURL: import.meta.env.DEV ? '/' : import.meta.env.VITE_API_URL,
   withCredentials: true, // 모든 요청에 쿠키를 자동으로 포함시키는 핵심 설정
 });
 
