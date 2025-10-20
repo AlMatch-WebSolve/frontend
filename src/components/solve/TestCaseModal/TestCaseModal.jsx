@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styles from './TestCaseModal.module.css';
 import CloseIcon from '../../../assets/icons/CloseIcon.svg';
 import PlusIcon from '../../../assets/icons/PlusIcon.svg';
@@ -10,6 +10,17 @@ function TestcaseModal({ onClose }) {
   const [testcases, setTestcases] = useState([
     { id: 1, input: '', output: '', name: '테스트 1' },
   ]);
+
+  const bodyRef = useRef(null);
+
+  useEffect(() => {
+    if (bodyRef.current) {
+      bodyRef.current.scrollTo({
+        top: bodyRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [testcases]);
 
   // 일반 테스트케이스 추가
   const addTestcase = () => {
@@ -45,16 +56,14 @@ function TestcaseModal({ onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.modalHeader}>
-          <h2 className={styles.modalTitle}>테스트케이스 추가</h2>
+          <p className={styles.modalTitle}>테스트케이스 추가</p>
           <button className={styles.closeButton} onClick={onClose}>
             <img src={CloseIcon} alt='닫기' />
           </button>
         </div>
 
-        <div className={styles.headerDivider}></div>
-
-        <div className={styles.modalBody}>
-          {testcases.map((tc, index) => (
+        <div className={styles.modalBody} ref={bodyRef}>
+          {testcases.map((tc) => (
             <div className={styles.testcaseItem} key={tc.id}>
               <span className={styles.itemTitle}>{tc.name}</span>
               <div className={styles.ioContainer}>
@@ -91,7 +100,7 @@ function TestcaseModal({ onClose }) {
             className={`${styles.button} ${styles.aiButton}`}
             onClick={addAiTestcase}
           >
-            <img src={AiPlusIcon} alt='추가'></img> AI 테스트케이스 추가
+            <img src={AiPlusIcon} alt='추가'></img> <p>AI 테스트케이스 추가</p>
           </button>
           <button className={`${styles.button} ${styles.saveButton}`}>
             저장
