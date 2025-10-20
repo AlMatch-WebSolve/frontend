@@ -53,7 +53,6 @@
 }
 
 .value {
-  /* 개행과 공백 유지 (멀티라인 입력 대비) */
   white-space: pre-wrap;
   word-break: break-word;
 }

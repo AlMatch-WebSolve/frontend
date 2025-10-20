@@ -1,4 +1,3 @@
-// SettingsModalLocal.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CloseIcon from '../../assets/icons/CloseIcon.svg';
@@ -110,7 +109,7 @@ export default function SettingsModalLocal({
   // 저장 흐름 - 버튼 클릭 시 ConfirmModal만 연다
   const askSave = () => { setConfirmKind('save'); setConfirmOpen(true); };
 
-  // ConfirmModal "확인"에서만 백엔드 호출
+  // ConfirmModal 확인에서만 백엔드 호출
   const handleConfirmSave = async () => {
     setSaving(true);
     try {
@@ -145,7 +144,7 @@ export default function SettingsModalLocal({
   // 로그아웃 흐름 - 버튼 클릭 시 ConfirmModal만 연다
   const askLogout = () => { setConfirmKind('logout'); setConfirmOpen(true); };
 
-  // ConfirmModal "확인"에서만 로그아웃 API 호출
+  // ConfirmModal 확인에서만 로그아웃 API 호출
   const handleConfirmLogout = async () => {
     setSaving(true);
     try {
@@ -166,7 +165,7 @@ export default function SettingsModalLocal({
     }
   };
 
-  // ConfirmModal "취소"는 ConfirmModal만 닫는다 (설정 모달 유지)
+  // ConfirmModal 취소시 설정 모달 유지
   const handleCancelConfirm = () => {
     setConfirmOpen(false);
     setConfirmKind(null);

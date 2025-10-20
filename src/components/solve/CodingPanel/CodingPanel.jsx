@@ -25,7 +25,7 @@ function CodingPanel({ solutionId, language, onTabChange, onSolutionLoaded }) {
   const [fileName, setFileName] = useState('');
   const [code, setCode] = useState('');
 
-  // 에디터 언어(우선순위: props.language > fileName 추론 > 'java')
+  // 에디터 언어
   const [editorLanguage, setEditorLanguage] = useState(language || 'java');
 
   // UI 상태
@@ -53,11 +53,10 @@ function CodingPanel({ solutionId, language, onTabChange, onSolutionLoaded }) {
         const { data } = await apiClient.get(`/api/solutions/${solutionId}`);
         if (!alive) return;
 
-        // 예시 응답: { solutionId, fileName, code, problemInfo: {...} }
         setFileName(data.fileName ?? '');
         setCode(data.code ?? '');
 
-        // 언어 결정: props.language가 없으면 파일 확장자로 추론
+        // 언어 결정
         if (!language) {
           setEditorLanguage(extToLang(data.fileName));
         } else {
@@ -86,7 +85,6 @@ function CodingPanel({ solutionId, language, onTabChange, onSolutionLoaded }) {
   // 에디터 변경/핫세이브
   const handleChange = (next) => setCode(next);
   const handleHotSave = () => {
-    // 필요 시 연결(현재는 의도적으로 비워둠)
     // handleSaveClick();
   };
 
@@ -206,7 +204,7 @@ function CodingPanel({ solutionId, language, onTabChange, onSolutionLoaded }) {
         {tab === 'code' ? (
           <section role="tabpanel" aria-labelledby="tab-code" id="panel-code" className={styles.fill}>
             <CodeEditor
-              language={editorLanguage} // 자동 추론 or 외부 지정
+              language={editorLanguage}
               value={code}
               onChange={handleChange}
               onHotSave={handleHotSave}
