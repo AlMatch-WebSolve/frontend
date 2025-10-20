@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import styles from './WorkSpaceProblemModal.module.css';
 import Pagination from '../WorkSpacePagination/WorkSpacePagination';
 import WorkSpaceSearch from '../WorkSpaceSearch/WorkSpaceSearch';
-import CloseIcon from '../../../assets/icons/x-02.svg';
-import PlusIcon from '../../../assets/icons/plus-01.svg';
+import CloseIcon from '../../../assets/icons/CloseIcon.svg';
+import PlusIcon from '../../../assets/icons/PlusIcon.svg';
 import apiClient from '../../../api/apiClient.js';
 
 const WorkSpaceProblemModal = ({ isOpen, onClose, onSelectProblem }) => {
@@ -61,6 +61,7 @@ const WorkSpaceProblemModal = ({ isOpen, onClose, onSelectProblem }) => {
 
   // 페이지 수는 서버 데이터 기준으로 동적 계산 (변수명 유지)
   const totalPages = Math.max(1, problemsByPage.length);
+
 
   // 현재 페이지에 해당하는 문제 목록 (변수명 유지)
   const currentProblems = problemsByPage[currentPage - 1] || [];
@@ -211,14 +212,6 @@ const WorkSpaceProblemModal = ({ isOpen, onClose, onSelectProblem }) => {
               />
             )}
 
-            {/* 검색 결과 정보 */}
-            {isSearching && (
-              <div className={styles.searchInfo}>
-                검색 결과: {filteredProblems.length}개 (페이지 {searchResultPage}/
-                {Math.max(1, Math.ceil(filteredProblems.length / itemsPerPage))})
-              </div>
-            )}
-
             {/* 언어 선택 */}
             <div className={styles.languageSelector}>
               <span className={styles.languageLabel}>언어 선택</span>
@@ -235,10 +228,6 @@ const WorkSpaceProblemModal = ({ isOpen, onClose, onSelectProblem }) => {
           </div>
         </div>
 
-        {/* 검색 결과 정보 (검색 중에만 표시) */}
-        {isSearching && (
-          <div className={styles.searchInfo}>검색 결과: {filteredProblems.length}개</div>
-        )}
       </div>
     </div>
   );

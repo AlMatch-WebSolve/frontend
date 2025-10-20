@@ -80,6 +80,11 @@
   font-weight: normal;
   height: 40px;
   background-color: #f2f9ff; /* 헤더 배경색 */
+  &:nth-child(1) { width: 130px; }
+  &:nth-child(2) { width: 200px; }
+  &:nth-child(3) { width: 125px; }
+  &:nth-child(4) { width: 240px; }
+  &:nth-child(5) { width: 101px; }
   
 }
 
