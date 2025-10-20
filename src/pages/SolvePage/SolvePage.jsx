@@ -26,10 +26,16 @@ function SolvePage() {
         if (!alive) return;
         setProblemLoaded(true);
       } catch (e) {
-        setProblemErr(e?.response?.status === 404 ? '문제를 찾을 수 없습니다. (404)' : '문제 조회 실패');
+        setProblemErr(
+          e?.response?.status === 404
+            ? '문제를 찾을 수 없습니다. (404)'
+            : '문제 조회 실패',
+        );
       }
     })();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [problemId]);
 
   return (
@@ -50,7 +56,9 @@ function SolvePage() {
           solutionId={Number(solutionId)}
           problemId={Number(problemId)}
         />
-        {codingTab === 'code' ? <ResultPanel activeTab={resultActiveTab} /> : null}
+        {codingTab === 'code' ? (
+          <ResultPanel activeTab={resultActiveTab} />
+        ) : null}
       </div>
     </div>
   );
