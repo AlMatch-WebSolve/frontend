@@ -3,17 +3,10 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    position: absolute;
-    top: 491px;
-    left: 401px;
   }
   
   /* 페이지 정보 컨테이너 (버튼, 페이지 번호) */
   .page-info {
-    width: 27px;
-    height: 20px;
-    top: 491px;
-    left: 435px;
     font-size: 14px;
     font: #000000;
     white-space: nowrap;
@@ -21,21 +14,16 @@
   
   /* 페이지네이션 버튼 (이전/다음) */
   .pagination-prev {
-    width: 20px;
-    height: 20px;
-    top: 489px;
-    left: 401px;
+    width: 24px;
+    height: 24px;
     background-color: transparent;
     border: none;
     cursor: pointer;
-    font-size: 14px;
   }
 
   .pagination-next {
     width: 24px;
     height: 24px;
-    top: 489px;
-    left: 472px;
     background-color: transparent;
     border: none;
     cursor: pointer;
@@ -45,7 +33,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     font-size: 16px;
     color: #333;
   }

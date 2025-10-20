@@ -1,125 +1,93 @@
-/* 추가 */
-.work-space-background {
-  width: 100%; 
-  height: calc(100vh - 60px); /* 전체 높이에서 header 60px을 뺀값: 스크롤이 생기는걸 막기 위해 사용 */
+.workSpaceBackground {
+  width: 100%;
+  height: calc(100vh - 60px);
   background-color: #F2F9ff;
 }
-
-/* 추가 */
-.work-space-container {
+.workSpaceContainer {
   max-width: 1600px;
-  margin: 0 auto; /* 중앙 정렬 */
+  margin: 0 auto;
   padding-top: 80px;
 }
-
-/* 추가 */
-.work-space-buttons-header-container {
+.workSpaceButtonsHeaderContainer {
   display: flex;
   justify-content: space-between;
   padding-left: 20px;
   padding-right: 20px;
 }
-
-/* 추가 */
-.work-space-buttons {
-  display: flex;
-  gap: 20px;
-}
-
-/* 최근 항목 */
-.work-space-buttons-recent {
-  width: 95px;
+.workSpaceButtons { display: flex; gap: 20px; }
+.workSpaceButtonsRecent {
   height: 34px;
   font-size: 24px;
-  color: #000000;
-  background-color: transparent;
+  color: #000;
+  background: transparent;
   border: none;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* cursor: pointer; */
-  margin-bottom: 10px; /* 추가 */
+  display: flex; align-items: center;
+  margin-bottom: 10px;
 }
-    
-/* 새 폴더 */
-.work-space-buttons-newfolder {
-  width: 73px;
+.workSpaceButtonsNewfolder,
+.workSpaceButtonsNewproblem {
   height: 34px;
   font-size: 24px;
-  text-align: center;
-  background-color: transparent;
+  background: transparent;
   border: none;
-  padding: 0;
   cursor: pointer;
 }
-  
-/* 문제 생성 */
-.work-space-buttons-newproblem {
-  width: 95px;
-  height: 34px;
-  font-size: 24px;
-  text-align: center;
-  background-color: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-}
-  
-/* 구분선 */
-.work-space-buttons-underline {
+.workSpaceButtonsUnderline {
   width: 1600px;
-  height: 0px;
   border: none;
-  border-bottom: 1px solid #000000;
+  border-bottom: 1px solid #000;
 }
 
-.work-space-box {
+/* 빈 상태 */
+.workSpaceBox {
   width: 1600px;
   height: 400px;
-  border: 2px dashed #666666;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 40px; /* 추가 */
+  border: 2px dashed #666;
+  display: flex; justify-content: center; align-items: center;
+  margin-top: 40px;
 }
+.workSpaceBoxContext { color: #000; font-size: 32px; }
 
-.work-space-box-context {
-  width: 415px;
-  height: 45px;
-  color: #000000;
-  font-size: 32px;
-}
-
-  /* folder-list 내의 모든 아이템에 적용될 기본 스타일 */
+/* 리스트 */
 .folderList {
   position: relative;
   list-style: none;
-  padding: 0;
-  margin: 0;
+  padding: 0; margin: 0;
   width: 100%;
-  min-height: 500px; /* 필요에 따라 조정 */
+  min-height: 500px;
 }
 
-.back-button {
-  width: 89px;
-  height: 34px;
-  font-size: 24px;
-  border: none;
-  background-color: transparent;
-  cursor: pointer;
-  margin-top: 10px;
-  margin-left: 20px;
-  margin-bottom: 17px;
+/* 한 줄은 항상 전체폭 라인 (컨텐츠 폭과 무관) */
+.row {
+  position: relative;
+  display: block;   /* block 보장 */
+  width: 100%;      /* 전체폭 보장 */
 }
 
-.current-folder-name {
-  width: 89px;
-  height: 34px;
-  font-size: 24px;
-  border: none;
-  background-color: transparent;
-  margin-top: 10px;
-  margin-left: 20px;
-  margin-bottom: 17px;
+/* 전체 폭 border-bottom */
+.row::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: #e5e7eb; /* 기존 보더 색상 */
 }
+
+/* 내부 컨텐츠는 폭 100% + 들여쓰기만 적용 */
+.rowContent {
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+}
+
+.indented {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding-left: calc(var(--depth, 0) * 20px); /* ← 내용만 들여쓰기 */
+  box-sizing: border-box; /* 패딩 포함 계산 */
+  transition: padding-left .15s ease;
+}
+

@@ -4,20 +4,20 @@ import styles from './WorkSpaceFolderItem.module.css';
 import FolderIcon from '../../../assets/icons/folder.svg';
 import DotsIcon from '../../../assets/icons/dot-horizontal.svg';
 
-const WorkSpaceFolderItem = ({ id, initialName, isInitialEditing, onNameConfirm, onDelete, top, left, onFolderClick  }) => {
+const WorkSpaceFolderItem = ({ id, initialName, isInitialEditing, onNameConfirm, onDelete, top, left, onFolderClick }) => {
   const [isEditing, setIsEditing] = useState(isInitialEditing || false);
   const [name, setName] = useState(initialName || '');
   const [showDropdown, setShowDropdown] = useState(false);
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
-  
+
   useEffect(() => {
     if (inputRef.current && isEditing) {
       inputRef.current.focus();
       inputRef.current.select();
     }
   }, [isEditing]);
-  
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -30,7 +30,7 @@ const WorkSpaceFolderItem = ({ id, initialName, isInitialEditing, onNameConfirm,
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-  
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       const finalName = name.trim();
@@ -38,14 +38,14 @@ const WorkSpaceFolderItem = ({ id, initialName, isInitialEditing, onNameConfirm,
         alert("폴더 이름을 입력하세요.");
         return;
       }
-      
+
       setIsEditing(false);
       if (onNameConfirm) {
         onNameConfirm(finalName);
       }
     }
   };
-  
+
   const handleBlur = () => {
     const finalName = name.trim();
     if (!finalName) {
@@ -57,7 +57,7 @@ const WorkSpaceFolderItem = ({ id, initialName, isInitialEditing, onNameConfirm,
       }
     }
   };
-  
+
   const toggleDropdown = () => {
     setShowDropdown(prev => !prev);
   };
@@ -80,17 +80,17 @@ const WorkSpaceFolderItem = ({ id, initialName, isInitialEditing, onNameConfirm,
       onFolderClick(id);
     }
   };
-  
+
   return (
-    <li 
-      className={styles['folder-item']} 
+    <div
+      className={styles['folder-item']}
       style={{ top: `${top}px`, left: `${left}px` }}
       onClick={handleFolderClick}
     >
       <span className={styles['folder-icon']}>
         <img src={FolderIcon} alt="폴더 아이콘" />
       </span>
-      
+
       {isEditing ? (
         <input
           ref={inputRef}
@@ -106,13 +106,13 @@ const WorkSpaceFolderItem = ({ id, initialName, isInitialEditing, onNameConfirm,
         <div className={styles['file-name-container']}>
           <span className={styles['folder-name-display']}>{name}</span>
           <div className={styles['dropdown-container']} ref={dropdownRef}>
-            <button 
-              className={styles['dots-button']} 
+            <button
+              className={styles['dots-button']}
               onClick={toggleDropdown}
             >
               <img src={DotsIcon} alt="더보기" className={styles['dots-icon']} />
             </button>
-            
+
             {showDropdown && (
               <div className={styles.dropdown}>
                 <button onClick={handleEdit} className={styles['dropdown-item']}>이름 수정</button>
@@ -122,7 +122,7 @@ const WorkSpaceFolderItem = ({ id, initialName, isInitialEditing, onNameConfirm,
           </div>
         </div>
       )}
-    </li>
+    </div>
   );
 };
 

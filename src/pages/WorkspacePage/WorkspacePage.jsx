@@ -1,223 +1,560 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import WorkSpaceProblemModal from '../../components/workspace/WorkSpaceProblemModal/WorkSpaceProblemModal.jsx';
 import WorkSpaceProblemList from '../../components/workspace/WorkSpaceProblemList/WorkSpaceProblemList.jsx';
 import WorkSpaceFolderItem from '../../components/workspace/WorkSpaceFolderItem/WorkSpaceFolderItem.jsx';
 import '../../styles/global.css';
 import styles from './WorkspacePage.module.css';
-// import { createFolder, deleteFolder, updateFolderName } from '../../api/folder.js';
-import apiClient from '../../api/apiClient';
-
-// 아이템 높이와 초기 위치 설정
-const ITEM_HEIGHT = 0; // 아이템 높이
-const INITIAL_TOP = 0; // 첫 아이템의 Y 위치
-const INITIAL_LEFT = 0; // 아이템의 X 위치
+import apiClient from '../../api/apiClient.js';
 
 function WorkspacePage() {
-  // 모달 열림/닫힘 상태 관리
-  const [IsModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [folders, setFolders] = useState([]);
-  const [selectedProblems, setSelectedProblems] = useState([]);
-  const [currentFolderId, setCurrentFolderId] = useState(null);
+  const [problems, setProblems] = useState([]);
+  const [selectedFolderId, setSelectedFolderId] = useState(null);
 
-  const handleFolderClick = (folderId) => {
-    setCurrentFolderId(folderId); // 클릭한 폴더를 현재 폴더로 설정
+  const [dragOverFolderId, setDragOverFolderId] = useState(null);
+  const [hoverDropIndex, setHoverDropIndex] = useState(null);
+  const [dragMeta, setDragMeta] = useState(null);
+
+  const DRAG_MIME = 'application/json';
+
+  /** 유틸: 맵/헬퍼 */
+  const folderMap = useMemo(() => {
+    const m = new Map();
+    folders.forEach(f => m.set(f.id, f));
+    return m;
+  }, [folders]);
+
+  const getFolderDepth = (folderId) => {
+    let d = 0;
+    let cur = folderMap.get(folderId) || null;
+    while (cur && cur.parentId) {
+      d += 1;
+      cur = folderMap.get(cur.parentId) || null;
+    }
+    return d;
+  };
+  const getProblemDepth = (p) => (p.folderId ? getFolderDepth(p.folderId) + 1 : 0);
+
+  /** 통합 리스트: order 기준 */
+  const unified = useMemo(() => {
+    const all = [
+      ...folders.map(f => ({ ...f, _kind: 'folder' })),
+      ...problems.map(p => ({ ...p, _kind: 'problem' })),
+    ];
+    return all.sort((a, b) => (a.order ?? a.createdAt ?? 0) - (b.order ?? b.createdAt ?? 0));
+  }, [folders, problems]);
+
+  /** 드롭존 컨텍스트(parent)를 미리 계산 (각 gap의 부모가 누구인지) */
+  const dropContexts = useMemo(() => {
+    // 전략: gap i(0..N)는 "gap 뒤에 오는 아이템"의 부모를 따른다.
+    // gap N(마지막)은 "마지막 아이템의 부모"를 따른다. 없으면 루트(null).
+    const ctx = new Array(unified.length + 1).fill(null);
+    for (let i = 0; i <= unified.length; i++) {
+      if (i === unified.length) {
+        // 마지막 갭
+        if (unified.length === 0) ctx[i] = { parentId: null };
+        else {
+          const last = unified[unified.length - 1];
+          ctx[i] = { parentId: last._kind === 'folder' ? last.parentId ?? null : last.folderId ?? null };
+        }
+      } else {
+        const next = unified[i];
+        ctx[i] = { parentId: next._kind === 'folder' ? next.parentId ?? null : next.folderId ?? null };
+      }
+    }
+    return ctx; // { parentId }
+  }, [unified]);
+
+  /** 조상-자손 체크(폴더 기준) */
+  const isAncestorFolder = (ancestorId, folderId) => {
+    if (!ancestorId || !folderId) return false;
+    let cur = folderMap.get(folderId)?.parentId ?? null;
+    while (cur) {
+      if (cur === ancestorId) return true;
+      cur = folderMap.get(cur)?.parentId ?? null;
+    }
+    return false;
   };
 
-  const handleBackToRoot = () => {
-    setCurrentFolderId(null); // 루트 레벨로 돌아가기
+  /** 아이템이 특정 폴더의 자손인가 (폴더/파일 모두) */
+  const isDescendantOfFolder = (item, folderId) => {
+    if (!folderId) return false;
+    let parent = item._kind === 'folder' ? item.parentId : item.folderId;
+    while (parent) {
+      if (parent === folderId) return true;
+      parent = folderMap.get(parent)?.parentId ?? null;
+    }
+    return false;
   };
 
-  // 새 폴더 버튼 클릭 핸들러
-  const handleNewFolder = async () => {
+  /** 폴더의 서브트리 블록 인덱스 범위 수집 (통합 리스트 기준, 연속 블록) */
+  const collectSubtreeRange = (items, folderId) => {
+    const start = items.findIndex(x => x._kind === 'folder' && x.id === folderId);
+    if (start < 0) return null;
+    let end = start;
+    for (let i = start + 1; i < items.length; i++) {
+      if (isDescendantOfFolder(items[i], folderId)) {
+        end = i;
+      } else {
+        break;
+      }
+    }
+    return { start, end }; // [start..end] inclusive
+  };
+
+  /** 순서 재부여 */
+  const reassignOrder = (items) => items.map((it, idx) => ({ ...it, order: idx }));
+
+  /** 공통: 드래그 시작 */
+  const handleDragStart = (type, id, e) => {
+    const payload = { type, id };
+    setDragMeta(payload);
+    e.dataTransfer.setData(DRAG_MIME, JSON.stringify(payload));
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const findUnifiedIndex = (type, id) =>
+    unified.findIndex(x => x._kind === type && x.id === id);
+
+  /** 사이 드롭존: 재정렬 + 부모 지정(컨텍스트) */
+  const handleDragOverDropZone = (index, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setHoverDropIndex(index);
+  };
+  const handleDragLeaveDropZone = (index) => {
+    setHoverDropIndex(prev => (prev === index ? null : prev));
+  };
+  const handleDropOnDropZone = (index, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setHoverDropIndex(null);
+
+    const raw = e.dataTransfer.getData(DRAG_MIME);
+    const payload = raw ? JSON.parse(raw) : dragMeta;
+    if (!payload) return;
+
+    const ctxParentId = dropContexts[index]?.parentId ?? null; // 폴더 id 또는 null(루트)
+    const curIdx = findUnifiedIndex(payload.type, payload.id);
+    if (curIdx < 0) return;
+
+    // 이동 소스가 폴더면 "서브트리 블록" 전체 이동
+    let items = unified.slice();
+    let movingBlock = null;
+
+    if (payload.type === 'folder') {
+      const range = collectSubtreeRange(items, payload.id);
+      if (!range) return;
+      movingBlock = items.slice(range.start, range.end + 1);
+      items.splice(range.start, range.end - range.start + 1);
+      // 드롭존 인덱스 보정 (앞에서 잘라내면 뒤쪽 인덱스가 줄어듦)
+      const target = index > range.start ? index - (range.end - range.start + 1) : index;
+
+      // 폴더 부모 바꾸기 (블록의 첫 아이템이 폴더 자신)
+      movingBlock = movingBlock.map((it, i) =>
+        i === 0 ? { ...it, parentId: ctxParentId } : it
+      );
+
+      // 파일 아래 파일 금지: 우리는 자식 부모를 "폴더 or 루트"만 쓰므로 OK
+      const next = [...items.slice(0, target), ...movingBlock, ...items.slice(target)];
+      const withOrder = reassignOrder(next);
+
+      setFolders(withOrder.filter(x => x._kind === 'folder').map(({ _kind, ...r }) => r));
+      setProblems(withOrder.filter(x => x._kind === 'problem').map(({ _kind, ...r }) => r));
+      return;
+    }
+
+    // 문제(파일)인 경우: 단일 이동
+    const moving = items[curIdx];
+    items.splice(curIdx, 1);
+    const target = index > curIdx ? index - 1 : index;
+
+    // 파일 아래 파일 금지: 컨텍스트 부모는 폴더 또는 루트(null)만 허용
+    const next = [
+      ...items.slice(0, target),
+      { ...moving, folderId: ctxParentId },
+      ...items.slice(target),
+    ];
+    const withOrder = reassignOrder(next);
+    setFolders(withOrder.filter(x => x._kind === 'folder').map(({ _kind, ...r }) => r));
+    setProblems(withOrder.filter(x => x._kind === 'problem').map(({ _kind, ...r }) => r));
+  };
+
+  const renderDropZone = (index) => (
+    <li
+      key={`drop-${index}`}
+      className={`${styles.dropZone} ${hoverDropIndex === index ? styles.dropZoneActive : ''}`}
+      onDragOver={(e) => handleDragOverDropZone(index, e)}
+      onDragLeave={() => handleDragLeaveDropZone(index)}
+      onDrop={(e) => handleDropOnDropZone(index, e)}
+    />
+  );
+
+  /** 폴더 위로 드롭: 그 폴더의 “첫 자식”으로 넣기 (바로 아래) */
+  const handleDragOverFolder = (targetFolderId, e) => {
+    e.preventDefault();
+    e.stopPropagation();
     try {
-      // API 호출로 새 폴더 생성
-      const folderData = {
-        name: "새 폴더",
-        parentId: currentFolderId // 현재 열린 폴더의 ID를 부모 ID로 설정
-      };
-      
-      // const createdFolder = await createFolder(folderData);
-      const createdFolder = await apiClient.post('/api/workspace/folders', folderData);
-      
-      // API 응답으로 받은 데이터로 상태 업데이트
-      const newFolder = {
-        id: createdFolder.id,
-        name: createdFolder.name,
-        isEditing: true, // 생성 시 이름 편집 모드로 시작
-        parentId: createdFolder.parentId
-      };
-      
-      setFolders(prev => [...prev, newFolder]);
-    } catch (error) {
-      alert('폴더 생성에 실패했습니다.');
-      console.error(error);
+      const raw = e.dataTransfer.getData(DRAG_MIME);
+      if (!raw) { setDragOverFolderId(targetFolderId); return; }
+      const { type, id } = JSON.parse(raw) || {};
+      if (type === 'folder') {
+        if (id === targetFolderId) return;
+        if (isAncestorFolder(id, targetFolderId)) return;
+      }
+      setDragOverFolderId(targetFolderId);
+    } catch {
+      setDragOverFolderId(targetFolderId);
     }
   };
-  //   const newFolder = {
-  //     id: `folder-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-  //     name: "새 폴더",
-  //     isEditing: true, // 생성 시 이름 편집 모드로 시작
-  //     parentId: currentFolderId // 현재 열린 폴더의 ID를 부모 ID로 설정
-  //   };
-  //   setFolders(prev => [...prev, newFolder]);
-  // };
+  const handleDragLeaveFolder = (targetFolderId, e) => {
+    e.stopPropagation();
+    setDragOverFolderId(prev => (prev === targetFolderId ? null : prev));
+  };
+  const handleDropOnFolder = (targetFolderId, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverFolderId(null);
 
-  // 폴더 이름 확정 핸들러
-  const handleFolderNameConfirm = async (folderId, newName) => {
+    const raw = e.dataTransfer.getData(DRAG_MIME);
+    const payload = raw ? JSON.parse(raw) : dragMeta;
+    if (!payload) return;
+
+    // 타깃 폴더의 “바로 아래”(첫 자식) 위치 산정
+    let items = unified.slice();
+    const folderIdx = items.findIndex(x => x._kind === 'folder' && x.id === targetFolderId);
+    if (folderIdx < 0) return;
+    let insertPos = folderIdx + 1; // 첫 자식으로
+
+    if (payload.type === 'folder') {
+      if (payload.id === targetFolderId) return;
+      if (isAncestorFolder(payload.id, targetFolderId)) return;
+
+      const range = collectSubtreeRange(items, payload.id);
+      if (!range) return;
+
+      const block = items.slice(range.start, range.end + 1);
+      items.splice(range.start, range.end - range.start + 1);
+
+      // 잘라낸 위치보다 앞에서 잘랐으면 insertPos 보정
+      if (range.start < insertPos) insertPos -= (range.end - range.start + 1);
+
+      // 폴더 자신만 부모 변경
+      block[0] = { ...block[0], parentId: targetFolderId };
+
+      const next = [...items.slice(0, insertPos), ...block, ...items.slice(insertPos)];
+      const withOrder = reassignOrder(next);
+      setFolders(withOrder.filter(x => x._kind === 'folder').map(({ _kind, ...r }) => r));
+      setProblems(withOrder.filter(x => x._kind === 'problem').map(({ _kind, ...r }) => r));
+      return;
+    }
+
+    // 파일이면 단일 이동
+    const curIdx = items.findIndex(x => x._kind === 'problem' && x.id === payload.id);
+    if (curIdx < 0) return;
+    const moving = items[curIdx];
+    items.splice(curIdx, 1);
+    if (curIdx < insertPos) insertPos -= 1;
+
+    const next = [
+      ...items.slice(0, insertPos),
+      { ...moving, folderId: targetFolderId },
+      ...items.slice(insertPos),
+    ];
+    const withOrder = reassignOrder(next);
+    setFolders(withOrder.filter(x => x._kind === 'folder').map(({ _kind, ...r }) => r));
+    setProblems(withOrder.filter(x => x._kind === 'problem').map(({ _kind, ...r }) => r));
+  };
+
+  /** 루트 배경에 드롭: 루트로 빼기 */
+  const handleListDragOver = (e) => e.preventDefault();
+  const handleListDropToRoot = (e) => {
+    e.preventDefault();
+    const raw = e.dataTransfer.getData(DRAG_MIME);
+    const payload = raw ? JSON.parse(raw) : dragMeta;
+    if (!payload) return;
+
+    let items = unified.slice();
+
+    if (payload.type === 'folder') {
+      const range = collectSubtreeRange(items, payload.id);
+      if (!range) return;
+      const block = items.slice(range.start, range.end + 1);
+      items.splice(range.start, range.end - range.start + 1);
+      block[0] = { ...block[0], parentId: null };
+      const next = [...items, ...block];
+      const withOrder = reassignOrder(next);
+      setFolders(withOrder.filter(x => x._kind === 'folder').map(({ _kind, ...r }) => r));
+      setProblems(withOrder.filter(x => x._kind === 'problem').map(({ _kind, ...r }) => r));
+      return;
+    }
+
+    const idx = items.findIndex(x => x._kind === 'problem' && x.id === payload.id);
+    if (idx < 0) return;
+    const moving = items[idx];
+    items.splice(idx, 1);
+    const next = [...items, { ...moving, folderId: null }];
+    const withOrder = reassignOrder(next);
+    setFolders(withOrder.filter(x => x._kind === 'folder').map(({ _kind, ...r }) => r));
+    setProblems(withOrder.filter(x => x._kind === 'problem').map(({ _kind, ...r }) => r));
+  };
+
+  /** 새 폴더/문제 생성 (맨 아래로 append) */
+  const nextOrder = unified.length;
+  const handleNewFolder = async () => {
+    let parentId = selectedFolderId ?? null;
+    const parent = parentId ? folderMap.get(parentId) : null;
+
+    if (!parentId || String(parentId).startsWith('temp-') || parent?._pending) {
+      parentId = null; // 서버에 임시/미확정 폴더를 부모로 보내지 않음
+    }
+
+    const tempId = `temp-${Date.now()}`;
+    const now = Date.now();
+
+    // 낙관적 append
+    setFolders(prev => [
+      ...prev,
+      {
+        id: tempId,
+        name: '새 폴더',
+        parentId,
+        isEditing: true,
+        _pending: true,
+        createdAt: now,
+        order: nextOrder,
+      },
+    ]);
+
     try {
-      // await updateFolderName(folderId, newName);
-      await apiClient.put(`/api/workspace/folders/${folderId}`, { newName });
-      setFolders(prev => 
-        prev.map(folder => 
-          folder.id === folderId 
-            ? { ...folder, name: newName, isEditing: false } 
-            : folder
+      // parentId가 있을 때만 body에 포함 (null 보내지 않기)
+      const body = parentId ? { name: '새 폴더', parentId } : { name: '새 폴더' };
+
+      const res = await apiClient.post('/api/workspace/folders', body);
+      if (res.status < 200 || res.status >= 300) {
+        throw new Error(`폴더 생성 실패 (status: ${res.status})`);
+      }
+
+      const data = res.data;
+      const serverId =
+        data?.id ?? data?.folderId ?? data?.data?.id ?? data?.result?.id ?? null;
+
+      setFolders(prev =>
+        prev.map(f =>
+          f.id === tempId ? { ...f, id: serverId || tempId, _pending: false } : f
         )
       );
-    } catch (error) {
-      alert('폴더 이름 수정에 실패했습니다.');
-      console.error(error);
+    } catch (e) {
+      // 서버 500일 때 원인 보려고 로그 남기기
+      console.error('Create folder error:', e?.response?.data || e);
+      // 롤백
+      setFolders(prev => prev.filter(f => f.id !== tempId));
+      alert(e?.response?.data?.message || e?.message || '폴더 생성에 실패했습니다.');
     }
   };
 
-  // 폴더 삭제 핸들러
+
+  const handleFolderNameConfirm = async (folderId, newName) => {
+    const f = folders.find(x => x.id === folderId);
+    if (!f) return;
+    const name = newName && newName.trim() ? newName.trim() : '새 폴더';
+    const isTemp = !folderId || String(folderId).startsWith('temp-');
+
+    if (f._pending || isTemp) {
+      setFolders(prev => prev.map(x => (x.id === folderId ? { ...x, name, isEditing: false } : x)));
+      return;
+    }
+    try {
+      const res = await apiClient.patch(`/api/workspace/folders/${folderId}`, { name });
+      if (res.status < 200 || res.status >= 300) throw new Error(`폴더 이름 변경 실패 (status: ${res.status})`);
+      setFolders(prev => prev.map(x => (x.id === folderId ? { ...x, name, isEditing: false } : x)));
+    } catch (e) {
+      setFolders(prev => prev.map(x => (x.id === folderId ? { ...x, name, isEditing: false } : x)));
+      alert(e?.response?.data?.message || e?.message || '폴더 이름 수정에 실패했습니다.');
+    }
+  };
+
   const handleDeleteFolder = async (folderId) => {
     try {
-      // await deleteFolder(folderId);
-      await apiClient.delete(`/api/workspace/folders/${folderId}`);
-      setFolders(prev => prev.filter(folder => folder.id !== folderId));
-    } catch (error) {
-      alert('폴더 삭제에 실패했습니다.');
-      console.error(error);
+      if (!folderId) return;
+      const f = folders.find(x => x.id === folderId);
+      if (String(folderId).startsWith('temp-') || f?._pending) {
+        setFolders(prev => prev.filter(x => x.id !== folderId));
+        if (selectedFolderId === folderId) setSelectedFolderId(null);
+        return;
+      }
+      const res = await apiClient.delete(`/api/workspace/folders/${folderId}`);
+      if (res.status < 200 || res.status >= 300) throw new Error(`폴더 삭제 실패 (status: ${res.status})`);
+      // 폴더 삭제 시 그 하위 트리(폴더/파일)도 같이 제거하려면 여기서 필터링 추가 가능
+      setFolders(prev => prev.filter(x => x.id !== folderId));
+      if (selectedFolderId === folderId) setSelectedFolderId(null);
+    } catch (e) {
+      alert(e?.response?.data?.message || e?.message || '폴더 삭제에 실패했습니다.');
     }
   };
 
-  // 문제 생성 버튼 클릭 핸들러
-  const handleNewProblem = () => {
-    setIsModalOpen(true);
-  };
+  const handleNewProblem = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
+  const handleSelectProblem = async (problem) => {
+    // 1) 모달에서 오는 객체는 { no, title, ... } 형태임
+    const rawProblemId = problem.id ?? problem.problemId ?? problem.no;
+    const problemId = Number(rawProblemId);
+    if (!Number.isFinite(problemId)) {
+      console.error('문제 ID 추출 실패:', problem);
+      alert('문제 ID를 찾을 수 없습니다.');
+      return;
+    }
+    const now = Date.now();
+    const uiId = `temp-sol-${now}-${Math.random().toString(36).slice(2, 9)}`;
+    const folderId = selectedFolderId ?? null;
+    const selectedLanguage = problem.selectedLanguage || 'java';
 
-  // 모달 닫기 핸들러
-  const handleCloseModal = () => {
+    // 1) 낙관적 추가: solutionId는 아직 없음(null), problemId는 반드시 저장
+    setProblems(prev => [
+      ...prev,
+      {
+        id: uiId,                 // UI key
+        solutionId: null,         // 서버 id 아직 없음
+        problemId,                // 올바른 문제 ID 저장
+        title: problem.title || `문제 ${problem.id}`,
+        folderId,
+        isEditing: true,
+        createdAt: now,
+        order: unified.length,
+        selectedLanguage,
+      },
+    ]);
     setIsModalOpen(false);
+
+    // 2) 서버에 솔루션 생성
+    try {
+      const body = folderId != null ? { problemId, folderId } : { problemId };
+      const res = await apiClient.post('/api/solutions', body);
+      if (res.status !== 201) throw new Error(`솔루션 생성 실패 (status: ${res.status})`);
+      const data = res.data || {};
+      const serverSolutionId = data.id ?? data.solutionId ?? data.data?.id ?? null;
+      const serverName = data.name ?? data.data?.name ?? null;
+
+      // 3) solutionId 갱신
+      setProblems(prev =>
+        prev.map(p =>
+          p.id === uiId
+            ? {
+              ...p,
+              solutionId: serverSolutionId ?? null,
+              title: serverName || p.title,
+              selectedLanguage: data.language || p.selectedLanguage,
+            }
+            : p
+        )
+      );
+    } catch (e) {
+      console.error('Create solution error:', e?.response?.data || e);
+      // 실패 시 롤백
+      setProblems(prev => prev.filter(p => p.id !== uiId));
+      alert(e?.response?.data?.message || e?.message || '파일 생성에 실패했습니다.');
+    }
   };
-
-  const handleSelectProblem = (problem) => {
-    const newProblem = {
-      ...problem,
-      id: `problem-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      folderId: currentFolderId, // 현재 열린 폴더 ID 저장
-      isEditing: true // 새로 생성된 문제는 편집 모드로 시작
-    };
-    setSelectedProblems(prev => [...prev, newProblem]);
-    setIsModalOpen(false);
-  };
-
-
 
   return (
     <div className={styles.workSpaceBackground}>
       <div className={styles.workSpaceContainer}>
-        {/* 헤더 버튼 컴포넌트 */}
         <div className={styles.workSpaceButtonsHeaderContainer}>
-          {/* 최근 항목 버튼 */}
           <span className={styles.workSpaceButtonsRecent}>최근 항목</span>
-  
-          {/* 오른쪽 버튼(새 폴더, 문제 생성) */}
           <div className={styles.workSpaceButtons}>
-            <button
-              className={styles.workSpaceButtonsNewfolder}
-              onClick={handleNewFolder}
-            >
+            <button className={styles.workSpaceButtonsNewfolder} onClick={() => setSelectedFolderId(null) || handleNewFolder()}>
               새 폴더
             </button>
-            <button
-              className={styles.workSpaceButtonsNewproblem}
-              onClick={handleNewProblem}
-            >
+            <button className={styles.workSpaceButtonsNewproblem} onClick={handleNewProblem}>
               문제 생성
             </button>
           </div>
         </div>
         <hr className={styles.workSpaceButtonsUnderline} />
-  
-        {/* 메인 박스 컴포넌트 또는 선택된 문제 */}
-        {selectedProblems.length > 0 || folders.length > 0 ? (
-          <ul className={styles.folderList}>
-            {/* 폴더 내부에 있을 때 표시할 헤더 */}
-            {currentFolderId && (
-              <div className={styles.folderHeader}>
-                <button onClick={handleBackToRoot} className={styles.backButton}>
-                  처음으로
-                </button>
-                <span className={styles.currentFolderName}>
-                  {`[${folders.find(f => f.id === currentFolderId)?.name || '폴더'}]`}
-                </span>
-              </div>
-            )}
-            
-            {/* 폴더 목록 렌더링 - 루트에서만 표시 */}
-            {folders
-              .filter(folder => folder.parentId === currentFolderId)
-              .map((folder, index) => (
-                <WorkSpaceFolderItem
-                  key={folder.id}
-                  id={folder.id}
-                  initialName={folder.name}
-                  isInitialEditing={folder.isEditing}
-                  top={INITIAL_TOP + (index * ITEM_HEIGHT)}
-                  left={INITIAL_LEFT}
-                  onNameConfirm={(newName) => handleFolderNameConfirm(folder.id, newName)}
-                  onDelete={() => handleDeleteFolder(folder.id)}
-                  onFolderClick={handleFolderClick}
-                />
-              ))}
-            
-            {/* 문제 목록 렌더링 - 현재 폴더에 맞게 필터링 */}
-            {selectedProblems
-              .filter(problem => 
-                currentFolderId === null 
-                  ? !problem.folderId 
-                  : problem.folderId === currentFolderId
-              )
-              .map((problem, index) => (
-                <WorkSpaceProblemList
-                  key={problem.id}
-                  id={problem.id}
-                  initialTitle={problem.title}
-                  selectedLanguage={problem.selectedLanguage}
-                  isInitialEditing={problem.isEditing} // 문제의 isEditing 상태를 prop으로 전달
-                  top={INITIAL_TOP + (currentFolderId === null ? folders.length * ITEM_HEIGHT : 0) + (index * ITEM_HEIGHT)}
-                  left={INITIAL_LEFT}
-                  onFileNameConfirm={(name) => {
-                    // 이름 변경 및 편집 상태 업데이트
-                    setSelectedProblems(prev => 
-                      prev.map(item => 
-                        item.id === problem.id 
-                          ? {...item, title: name, isEditing: false} // isEditing 상태를 false로 업데이트
-                          : item
-                      )
-                    );
-                  }}
-                  onDelete={() => {
-                    console.log('삭제 요청된 ID:', problem.id);
-                    setSelectedProblems(prev => prev.filter(item => item.id !== problem.id));
-                  }}
-                />
-              ))}
+
+        {unified.length > 0 ? (
+          <ul className={styles.folderList} onDragOver={handleListDragOver} onDrop={handleListDropToRoot}>
+            {renderDropZone(0)}
+            {unified.map((item, index) => {
+              const depth = item._kind === 'folder' ? getFolderDepth(item.id) : getProblemDepth(item);
+
+              if (item._kind === 'folder') {
+                return (
+                  <React.Fragment key={`row-folder-${item.id}`}>
+                    <li
+                      className={`${styles.row} ${item.id === dragOverFolderId ? styles.dragOver : ''}`}
+                      draggable
+                      onDragStart={(e) => handleDragStart('folder', item.id, e)}
+                      onDragOver={(e) => handleDragOverFolder(item.id, e)}
+                      onDragLeave={(e) => handleDragLeaveFolder(item.id, e)}
+                      onDrop={(e) => handleDropOnFolder(item.id, e)}
+                      onDoubleClick={() => {
+                        if (!item.problemId) return;
+                        navigate(`/solve/${item.problemId}`, { state: { solutionId: item.solutionId ?? null } });
+                      }}
+                    >
+                      {/* 줄은 li.row::after가, 들여쓰기는 안쪽에서만 */}
+                      <div className={styles.rowContent}>
+                        <div
+                          className={styles.indented}
+                          style={{ '--depth': String(depth) }}
+                          onClick={() => setSelectedFolderId(item.id)}
+                        >
+                          <WorkSpaceFolderItem
+                            id={item.id}
+                            initialName={item.name}
+                            isInitialEditing={item.isEditing}
+                            pending={item._pending}
+                            onNameConfirm={(newName) => handleFolderNameConfirm(item.id, newName)}
+                            onDelete={() => handleDeleteFolder(item.id)}
+                            onFolderClick={setSelectedFolderId}
+                          />
+                        </div>
+                      </div>
+                    </li>
+                    {renderDropZone(index + 1)}
+                  </React.Fragment>
+                );
+              }
+
+              return (
+                <React.Fragment key={`row-problem-${item.id}`}>
+                  <li
+                    className={styles.row}
+                    draggable
+                    onDragStart={(e) => handleDragStart('problem', item.id, e)}
+                  >
+                    <div className={styles.rowContent}>
+                      <div className={styles.indented} style={{ '--depth': String(depth) }}>
+                        <WorkSpaceProblemList
+                          id={item.id}
+                          problemId={item.problemId}
+                          solutionId={item.solutionId}
+                          initialTitle={item.title}
+                          selectedLanguage={item.selectedLanguage}
+                          isInitialEditing={item.isEditing}
+                          onFileNameConfirm={(name) => handleSolutionRename(item.id, name)}
+                          onDelete={() => handleDeleteSolution(item.id)}
+                        />
+                      </div>
+                    </div>
+                  </li>
+                  {renderDropZone(index + 1)}
+                </React.Fragment>
+              );
+            })}
           </ul>
         ) : (
           <div className={styles.workSpaceBox}>
-            <div className={styles.workSpaceBoxContext}>
-              새 폴더나 문제를 생성해주세요.
-            </div>
+            <div className={styles.workSpaceBoxContext}>새 폴더나 문제를 생성해주세요.</div>
           </div>
         )}
-  
-        {/* 문제 생성 모달 */}
+
         <WorkSpaceProblemModal
-          isOpen={IsModalOpen}
+          isOpen={isModalOpen}
           onClose={handleCloseModal}
           onSelectProblem={handleSelectProblem}
         />
@@ -226,4 +563,4 @@ function WorkspacePage() {
   );
 }
 
-export default WorkspacePage;
+export default WorkspacePage; 
