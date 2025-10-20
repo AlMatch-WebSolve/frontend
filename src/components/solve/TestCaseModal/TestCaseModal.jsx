@@ -46,7 +46,26 @@ function TestcaseModal({ onClose }) {
   // 테스트케이스 삭제 (1개 남으면 삭제 안됨)
   const removeTestcase = (idToRemove) => {
     if (testcases.length <= 1) return; // 최소 1개 유지
-    setTestcases(testcases.filter((tc) => tc.id !== idToRemove));
+
+    // 1. 삭제 후 남은 리스트
+    const updated = testcases.filter((tc) => tc.id !== idToRemove);
+
+    // 2. 일반 테스트와 AI 테스트 각각 이름만 재정렬
+    let normalIndex = 1;
+    let aiIndex = 1;
+
+    const reordered = updated.map((tc) => {
+      if (tc.name.startsWith('AI 테스트')) {
+        return { ...tc, name: `AI 테스트 ${aiIndex++}` };
+      } else {
+        return { ...tc, name: `테스트 ${normalIndex++}` };
+      }
+    });
+
+    // 3. ID도 배열 순서대로 다시 매기기
+    const finalList = reordered.map((tc, i) => ({ ...tc, id: i + 1 }));
+
+    setTestcases(finalList);
   };
 
   return (
