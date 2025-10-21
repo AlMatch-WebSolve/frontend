@@ -6,136 +6,207 @@ import CloseIcon from '../../../assets/icons/CloseIcon.svg';
 import PlusIcon from '../../../assets/icons/PlusIcon.svg';
 import apiClient from '../../../api/apiClient.js';
 
+// 클라이언트 페이징용
+const ITEMS_PER_PAGE = 6;
+
 const WorkSpaceProblemModal = ({ isOpen, onClose, onSelectProblem }) => {
-  // 모든 useState는 컴포넌트 최상단에 위치
-  const [currentPage, setCurrentPage] = useState(1);
-  const [_searchTerm, setSearchTerm] = useState('');
+  // --- 상태 변수 (클라이언트 사이드 로직 기반) ---
+  const [allProblems, setAllProblems] = useState([]);
   const [filteredProblems, setFilteredProblems] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState('java'); // 기본값을 Java로 설정
-  const [searchResultPage, setSearchResultPage] = useState(1);
-  const itemsPerPage = 6; // 페이지당 표시할 항목 수
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedLanguage, setSelectedLanguage] = useState('java');
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 서버 데이터로 교체
-  const [problemsByPage, setProblemsByPage] = useState([]);
-
-  // 훅은 조기 리턴보다 위에서 호출하고, 내부에서 isOpen 가드
+  // 모달이 열릴 때 모든 페이지의 데이터를 가져오는 useEffect
   useEffect(() => {
     if (!isOpen) return;
 
-    const fetchProblems = async () => {
+    const fetchAllPages = async () => {
+      setIsLoading(true);
+      let combinedProblems = [];
+
       try {
-        const { data } = await apiClient.get('/api/problems'); // GET /api/problems
-        const normalized = Array.isArray(data)
-          ? data.map((p) => ({
-            no: p.id,
-            title: p.title,
-            level: `LV. ${p.level}`,
-            algorithm: Array.isArray(p.tags) ? p.tags.join(', ') : '',
-          }))
-          : [];
+        // [1] 먼저 1페이지를 호출해서 전체 페이지 수를 파악
+        const { data: firstPageData } = await apiClient.get('/api/problems', {
+          params: { page: 1, size: ITEMS_PER_PAGE },
+        });
 
-        // 페이지 단위로 나누기 (itemsPerPage 유지)
-        const pages = [];
-        for (let i = 0; i < normalized.length; i += itemsPerPage) {
-          pages.push(normalized.slice(i, i + itemsPerPage));
+        // 1페이지 문제 목록 추가
+        combinedProblems = combinedProblems.concat(
+          firstPageData.problems || [],
+        );
+        const totalPages = firstPageData.totalPages || 1;
+
+        // [2] 2페이지부터 나머지 페이지를 *동시에* 요청
+        if (totalPages > 1) {
+          const pageFetchPromises = [];
+          for (let page = 2; page <= totalPages; page++) {
+            pageFetchPromises.push(
+              apiClient.get('/api/problems', {
+                params: { page, size: ITEMS_PER_PAGE },
+              }),
+            );
+          }
+
+          // [3] 모든 요청이 완료되면 결과를 합침
+          const responses = await Promise.all(pageFetchPromises);
+          responses.forEach((response) => {
+            combinedProblems = combinedProblems.concat(
+              response.data.problems || [],
+            );
+          });
         }
-        setProblemsByPage(pages);
 
-        // 모달 열릴 때 초기화 (기존 변수명 그대로)
-        setCurrentPage(1);
-        setIsSearching(false);
-        setFilteredProblems([]);
-        setSearchResultPage(1);
+        // [4] 가져온 모든 데이터를 정규화
+        const normalized = combinedProblems.map((p) => ({
+          no: p.id,
+          title: p.title,
+          level: `LV. ${p.level}`,
+          algorithm: Array.isArray(p.tags) ? p.tags.join(', ') : '',
+        }));
+
+        setAllProblems(normalized);
       } catch (e) {
-        console.error('문제 목록 조회 실패:', e);
-        setProblemsByPage([]); // 실패 시 빈 페이지
+        console.error('모든 문제 목록 조회 실패:', e);
+        setAllProblems([]);
+      } finally {
+        setIsLoading(false);
+        // API 호출이 모두 완료된 후 상태 초기화
+        setCurrentPage(1);
+        setSearchTerm('');
+        setIsSearching(false);
       }
     };
 
-    fetchProblems();
-  }, [isOpen, itemsPerPage]);
+    fetchAllPages();
+  }, [isOpen]); // 모달이 열릴 때만 실행
 
-  // 조건부 렌더링은 useState/useEffect 이후에
+  // 검색어(searchTerm)가 바뀔 때마다 필터링을 실행하는 useEffect
+  useEffect(() => {
+    // 로딩 중이 아닐 때만 필터링 실행
+    if (isLoading) return;
+
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) {
+      setIsSearching(false);
+      setFilteredProblems(allProblems);
+    } else {
+      setIsSearching(true);
+
+      const results = allProblems.filter(
+        (problem) =>
+          problem.no.toString().includes(term) || // 번호
+          problem.title.toLowerCase().includes(term) || // 문제
+          problem.level.toString().toLowerCase().includes(term) || // 난이도 (LV. 1)
+          problem.algorithm.toLowerCase().includes(term), // 알고리즘
+      );
+      setFilteredProblems(results);
+    }
+    setCurrentPage(1);
+  }, [searchTerm, allProblems, isLoading]); // isLoading 추가
+
   if (!isOpen) return null;
 
-  // 페이지 수는 서버 데이터 기준으로 동적 계산 (변수명 유지)
-  const totalPages = Math.max(1, problemsByPage.length);
+  const currentProblemsList = filteredProblems;
+  const totalPages = Math.max(
+    1,
+    Math.ceil(currentProblemsList.length / ITEMS_PER_PAGE),
+  );
 
+  const displayProblems = currentProblemsList.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
 
-  // 현재 페이지에 해당하는 문제 목록 (변수명 유지)
-  const currentProblems = problemsByPage[currentPage - 1] || [];
-
-  // 현재 표시할 문제 목록 (검색 중이면 검색 결과, 아니면 현재 페이지 문제)
-  const displayProblems = isSearching
-    ? filteredProblems.slice(
-      (searchResultPage - 1) * itemsPerPage,
-      searchResultPage * itemsPerPage
-    )
-    : currentProblems;
-
-  // 이전 페이지로 이동
   const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
+    setCurrentPage((prev) => Math.max(1, prev - 1));
   };
 
-  // 다음 페이지로 이동
   const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
+    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
   };
 
-  // 문제 추가 버튼 클릭 핸들러 (문제 선택 시 모달 닫는 역할)
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+  };
+
   const handleAddProblem = (problem) => {
-    const problemObj = typeof problem === 'string' ? { title: problem } : problem;
-    const completeData = { ...problemObj, selectedLanguage };
+    const completeData = { ...problem, selectedLanguage };
     if (onSelectProblem) onSelectProblem(completeData);
     onClose();
   };
 
-  // 검색 핸들러 함수 (기존 로직/변수명 유지, 대상만 problemsByPage 전체로)
-  const handleSearch = (term) => {
-    if (!term.trim()) {
-      setIsSearching(false);
-      return;
+  const renderTableBody = () => {
+    const renderFillerRows = (startKey, rowCount) => {
+      const rows = [];
+      // rowCount만큼 빈 <tr>을 생성
+      for (let i = 0; i < rowCount; i++) {
+        rows.push(
+          <tr key={`filler-${startKey + i}`} className={styles.fillerRow}>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>,
+        );
+      }
+      return rows;
+    };
+
+    if (isLoading) {
+      return (
+        <React.Fragment>
+          <tr key='loading-msg'>
+            <td colSpan='5' className={styles.centeredCell}>
+              전체 문제 목록을 불러오는 중...
+            </td>
+          </tr>
+          {renderFillerRows(0, ITEMS_PER_PAGE - 1)}
+        </React.Fragment>
+      );
     }
 
-    setIsSearching(true);
-    setSearchTerm(term);
-    setSearchResultPage(1);
-
-    const results = [];
-    problemsByPage.forEach((page) => {
-      page.forEach((problem) => {
-        if (
-          problem.no.toString().includes(term) ||
-          problem.title.toLowerCase().includes(term.toLowerCase()) ||
-          problem.level.toLowerCase().includes(term.toLowerCase()) ||
-          problem.algorithm.toLowerCase().includes(term.toLowerCase())
-        ) {
-          results.push(problem);
-        }
-      });
-    });
-
-    setFilteredProblems(results);
-  };
-
-  // 검색 결과 페이지네이션 핸들러
-  const handleSearchPrevPage = () => {
-    if (searchResultPage > 1) {
-      setSearchResultPage(searchResultPage - 1);
+    if (displayProblems.length === 0) {
+      return (
+        <React.Fragment>
+          <tr key='empty-msg'>
+            {' '}
+            <td colSpan='5' className={styles.centeredCell}>
+              {isSearching ? '검색 결과가 없습니다.' : '문제가 없습니다.'}
+            </td>
+          </tr>
+          {renderFillerRows(0, ITEMS_PER_PAGE - 1)}
+        </React.Fragment>
+      );
     }
-  };
 
-  const handleSearchNextPage = () => {
-    const maxPage = Math.ceil(filteredProblems.length / itemsPerPage);
-    if (searchResultPage < maxPage) {
-      setSearchResultPage(searchResultPage + 1);
-    }
+    return (
+      <React.Fragment>
+        {displayProblems.map((problem) => (
+          <tr key={problem.no}>
+            <td>{problem.no}</td>
+            <td>{problem.title}</td>
+            <td>{problem.level}</td>
+            <td>{problem.algorithm}</td>
+            <td>
+              <button
+                className={styles.problemAddBtn}
+                onClick={() => handleAddProblem(problem)}
+              >
+                <img src={PlusIcon} alt='추가' />
+              </button>
+            </td>
+          </tr>
+        ))}
+        {renderFillerRows(
+          displayProblems.length,
+          ITEMS_PER_PAGE - displayProblems.length,
+        )}
+      </React.Fragment>
+    );
   };
 
   return (
@@ -145,7 +216,7 @@ const WorkSpaceProblemModal = ({ isOpen, onClose, onSelectProblem }) => {
         <div className={styles.modalHeader}>
           <span className={styles.modalTitle}>알고리즘 문제 목록</span>
           <button className={styles.closeBtn} onClick={onClose}>
-            <img src={CloseIcon} alt="닫기" />
+            <img src={CloseIcon} alt='닫기' />
           </button>
         </div>
 
@@ -166,51 +237,17 @@ const WorkSpaceProblemModal = ({ isOpen, onClose, onSelectProblem }) => {
                 <th>추가</th>
               </tr>
             </thead>
-            <tbody>
-              {displayProblems.length > 0 ? (
-                displayProblems.map((problem) => (
-                  <tr key={problem.no}>
-                    <td>{problem.no}</td>
-                    <td>{problem.title}</td>
-                    <td>{problem.level}</td>
-                    <td>{problem.algorithm}</td>
-                    <td>
-                      <button
-                        className={styles.problemAddBtn}
-                        onClick={() => handleAddProblem(problem)}
-                      >
-                        <img src={PlusIcon} alt="추가" />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
-                    {isSearching ? '검색 결과가 없습니다.' : '문제가 없습니다.'}
-                  </td>
-                </tr>
-              )}
-            </tbody>
+            <tbody>{renderTableBody()}</tbody>
           </table>
 
           {/* 페이지네이션 */}
           <div className={styles.modalFooter}>
-            {isSearching ? (
-              <Pagination
-                currentPage={searchResultPage}
-                totalPages={Math.max(1, Math.ceil(filteredProblems.length / itemsPerPage))}
-                onPrevPage={handleSearchPrevPage}
-                onNextPage={handleSearchNextPage}
-              />
-            ) : (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPrevPage={handlePrevPage}
-                onNextPage={handleNextPage}
-              />
-            )}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPrevPage={handlePrevPage}
+              onNextPage={handleNextPage}
+            />
 
             {/* 언어 선택 */}
             <div className={styles.languageSelector}>
@@ -220,14 +257,13 @@ const WorkSpaceProblemModal = ({ isOpen, onClose, onSelectProblem }) => {
                 onChange={(e) => setSelectedLanguage(e.target.value)}
                 className={styles.languageDropdown}
               >
-                <option value="java">Java</option>
-                <option value="javascript">JavaScript</option>
-                <option value="python">Python</option>
+                <option value='java'>Java</option>
+                <option value='javascript'>JavaScript</option>
+                <option value='python'>Python</option>
               </select>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
