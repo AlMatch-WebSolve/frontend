@@ -111,7 +111,9 @@ function SolveSidebar() {
       <React.Fragment key={rootItem.id}>
         <FileTreeItem item={rootItem} />
         {/* 최상위 아이템(폴더) 사이에만 구분선(divider) 추가 */}
-        {index < fileTree.length - 1 && <div className={styles.divider} />}
+        {rootItem.type === 'FOLDER' && index < fileTree.length - 1 && (
+          <div className={styles.divider} />
+        )}
       </React.Fragment>
     ));
   };
