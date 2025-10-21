@@ -189,8 +189,6 @@ function CodingPanel({ solutionId, language, onTabChange, onSolutionLoaded }) {
             <Button onClick={handleSaveClick} disabled={saving || !solutionId || loading}>
               저장
             </Button>
-
-            {/* 연결 제거된 버튼들 (요구사항) */}
             <Button disabled>테스트</Button>
             <Button className={styles.submitBtn} disabled>
               제출
@@ -232,7 +230,7 @@ function CodingPanel({ solutionId, language, onTabChange, onSolutionLoaded }) {
         onClose={closeSaveModal}
         onAfterAutoClose={afterSaveModalAutoClose}
         message={saveMessage}
-        duration={1000}
+        duration={1500}
       />
     </div>
   );
