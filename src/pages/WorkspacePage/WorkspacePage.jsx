@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import WorkSpaceProblemModal from '../../components/workspace/WorkSpaceProblemModal/WorkSpaceProblemModal.jsx';
 import WorkSpaceProblemList from '../../components/workspace/WorkSpaceProblemList/WorkSpaceProblemList.jsx';
@@ -13,6 +13,63 @@ function WorkspacePage() {
   const [folders, setFolders] = useState([]);
   const [problems, setProblems] = useState([]);
   const [selectedFolderId, setSelectedFolderId] = useState(null);
+ 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // 작업 공간 트리 구조 가져오는 함수
+  const getWorkspaceTree = async () => {
+    const response = await apiClient.get('/api/workspace/tree');
+    return response.data;
+  };
+
+  useEffect(() => {
+    const fetchWorkspaceData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getWorkspaceTree();
+  
+        // API 응답 데이터를 폴더와 문제 배열로 분리
+        const newFolders = [];
+        const newProblems = [];
+  
+        if (Array.isArray(data)) {
+          data.forEach(item => {
+            if (item.type === 'FOLDER') {
+              newFolders.push({
+                id: item.id,
+                name: item.name,
+                parentId: item.parentId || null,
+                order: item.order || 0,
+              });
+            } else {
+              newProblems.push({
+                id: item.id,
+                title: item.name,
+                folderId: item.parentId || null,
+                problemId: item.problemId || null,
+                solutionId: item.id,
+                selectedLanguage: item.language || 'java',
+                order: item.order || 0,
+              });
+            }
+          });
+        }
+  
+        setFolders(newFolders);
+        setProblems(newProblems);
+  
+      } catch (e) {
+        setError('작업 공간 데이터를 불러오는데 실패했습니다.');
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchWorkspaceData();
+  }, []);  
 
   // 파일명 변경/삭제 핸들러
   const handleSolutionRename = (uiId, newName) => {
@@ -33,7 +90,6 @@ function WorkspacePage() {
 
   const DRAG_MIME = 'application/json';
 
-  /* 유틸: 맵/헬퍼 */
   const folderMap = useMemo(() => {
     const m = new Map();
     folders.forEach(f => m.set(f.id, f));
@@ -51,7 +107,7 @@ function WorkspacePage() {
   };
   const getProblemDepth = (p) => (p.folderId ? getFolderDepth(p.folderId) + 1 : 0);
 
-  /* 통합 리스트: order 기준 */
+  // 통합 리스트: order 기준
   const unified = useMemo(() => {
     const all = [
       ...folders.map(f => ({ ...f, _kind: 'folder' })),
@@ -60,14 +116,11 @@ function WorkspacePage() {
     return all.sort((a, b) => (a.order ?? a.createdAt ?? 0) - (b.order ?? b.createdAt ?? 0));
   }, [folders, problems]);
 
-  /* 드롭존 컨텍스트(parent)를 미리 계산 (각 gap의 부모가 누구인지) */
+  // 드롭존 컨텍스트(parent)를 미리 계산
   const dropContexts = useMemo(() => {
-    // 전략: gap i(0..N)는 "gap 뒤에 오는 아이템"의 부모를 따른다.
-    // gap N(마지막)은 "마지막 아이템의 부모"를 따른다. 없으면 루트(null).
     const ctx = new Array(unified.length + 1).fill(null);
     for (let i = 0; i <= unified.length; i++) {
       if (i === unified.length) {
-        // 마지막 갭
         if (unified.length === 0) ctx[i] = { parentId: null };
         else {
           const last = unified[unified.length - 1];
@@ -81,7 +134,7 @@ function WorkspacePage() {
     return ctx; // { parentId }
   }, [unified]);
 
-  /* 조상-자손 체크(폴더 기준) */
+  // 조상-자손 체크(폴더 기준)
   const isAncestorFolder = (ancestorId, folderId) => {
     if (!ancestorId || !folderId) return false;
     let cur = folderMap.get(folderId)?.parentId ?? null;
@@ -92,7 +145,7 @@ function WorkspacePage() {
     return false;
   };
 
-  /* 아이템이 특정 폴더의 자손인가 (폴더/파일 모두) */
+  // 아이템이 특정 폴더의 자손인가 (폴더/파일 모두)
   const isDescendantOfFolder = (item, folderId) => {
     if (!folderId) return false;
     let parent = item._kind === 'folder' ? item.parentId : item.folderId;
@@ -103,7 +156,7 @@ function WorkspacePage() {
     return false;
   };
 
-  /* 폴더의 서브트리 블록 인덱스 범위 수집 (통합 리스트 기준, 연속 블록) */
+  // 폴더의 서브트리 블록 인덱스 범위 수집 (통합 리스트 기준, 연속 블록)
   const collectSubtreeRange = (items, folderId) => {
     const start = items.findIndex(x => x._kind === 'folder' && x.id === folderId);
     if (start < 0) return null;
@@ -115,13 +168,13 @@ function WorkspacePage() {
         break;
       }
     }
-    return { start, end }; // [start..end] inclusive
+    return { start, end };
   };
 
-  /* 순서 재부여 */
+  // 순서 재부여 
   const reassignOrder = (items) => items.map((it, idx) => ({ ...it, order: idx }));
 
-  /* 공통: 드래그 시작 */
+  // 공통: 드래그 시작
   const handleDragStart = (type, id, e) => {
     const payload = { type, id };
     setDragMeta(payload);
@@ -132,7 +185,7 @@ function WorkspacePage() {
   const findUnifiedIndex = (type, id) =>
     unified.findIndex(x => x._kind === type && x.id === id);
 
-  /* 사이 드롭존: 재정렬 + 부모 지정(컨텍스트) */
+  // 사이 드롭존: 재정렬 + 부모 지정(컨텍스트)
   const handleDragOverDropZone = (index, e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -154,7 +207,7 @@ function WorkspacePage() {
     const curIdx = findUnifiedIndex(payload.type, payload.id);
     if (curIdx < 0) return;
 
-    // 이동 소스가 폴더면 "서브트리 블록" 전체 이동
+    // 이동 소스가 폴더면 서브트리 블록 전체 이동
     let items = unified.slice();
     let movingBlock = null;
 
@@ -171,7 +224,7 @@ function WorkspacePage() {
         i === 0 ? { ...it, parentId: ctxParentId } : it
       );
 
-      // 파일 아래 파일 금지: 우리는 자식 부모를 "폴더 or 루트"만 쓰므로 OK
+      // 파일 아래 파일 금지
       const next = [...items.slice(0, target), ...movingBlock, ...items.slice(target)];
       const withOrder = reassignOrder(next);
 
@@ -206,7 +259,7 @@ function WorkspacePage() {
     />
   );
 
-  /* 폴더 위로 드롭: 그 폴더의 “첫 자식”으로 넣기 (바로 아래) */
+  // 폴더 위로 드롭: 그 폴더의 첫 자식으로 넣기 (바로 아래)
   const handleDragOverFolder = (targetFolderId, e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -236,7 +289,7 @@ function WorkspacePage() {
     const payload = raw ? JSON.parse(raw) : dragMeta;
     if (!payload) return;
 
-    // 타깃 폴더의 “바로 아래”(첫 자식) 위치 산정
+    // 타깃 폴더의 바로 아래 위치 산정
     let items = unified.slice();
     const folderIdx = items.findIndex(x => x._kind === 'folder' && x.id === targetFolderId);
     if (folderIdx < 0) return;
@@ -282,7 +335,7 @@ function WorkspacePage() {
     setProblems(withOrder.filter(x => x._kind === 'problem').map(({ _kind, ...r }) => r));
   };
 
-  /* 루트 배경에 드롭: 루트로 빼기 */
+  // 루트 배경에 드롭: 루트로 빼기
   const handleListDragOver = (e) => e.preventDefault();
   const handleListDropToRoot = (e) => {
     e.preventDefault();
@@ -315,7 +368,7 @@ function WorkspacePage() {
     setProblems(withOrder.filter(x => x._kind === 'problem').map(({ _kind, ...r }) => r));
   };
 
-  /* 새 폴더/문제 생성 (맨 아래로 append) */
+  // 새 폴더/문제 생성 (맨 아래로 append)
   const nextOrder = unified.length;
   const handleNewFolder = async () => {
     let parentId = selectedFolderId ?? null;
@@ -328,7 +381,6 @@ function WorkspacePage() {
     const tempId = `temp-${Date.now()}`;
     const now = Date.now();
 
-    // 낙관적 append
     setFolders(prev => [
       ...prev,
       {
@@ -412,7 +464,6 @@ function WorkspacePage() {
   const handleNewProblem = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
   const handleSelectProblem = async (problem) => {
-    // 1) 모달에서 오는 객체는 { no, title, ... } 형태임
     const rawProblemId = problem.id ?? problem.problemId ?? problem.no;
     const problemId = Number(rawProblemId);
     if (!Number.isFinite(problemId)) {
@@ -425,7 +476,6 @@ function WorkspacePage() {
     const folderId = selectedFolderId ?? null;
     const selectedLanguage = problem.selectedLanguage || 'java';
 
-    // 1) 낙관적 추가: solutionId는 아직 없음(null), problemId는 반드시 저장
     setProblems(prev => [
       ...prev,
       {
@@ -442,24 +492,33 @@ function WorkspacePage() {
     ]);
     setIsModalOpen(false);
 
-    // 2) 서버에 솔루션 생성
+    // 서버에 솔루션 생성
     try {
-      const body = folderId != null ? { problemId, folderId } : { problemId };
-      const res = await apiClient.post('/api/solutions', body);
+      const f = folderId != null ? folderMap.get(folderId) : null;
+      const isTemp = folderId != null && String(folderId).startsWith('temp-');
+      const isPending = f?._pending === true;
+      const safeBody = (!folderId || isTemp || isPending)
+        ? { problemId }
+        : { problemId, folderId };
+
+      const res = await apiClient.post('/api/solutions', safeBody);
       if (res.status !== 201) throw new Error(`솔루션 생성 실패 (status: ${res.status})`);
       const data = res.data || {};
-      const serverSolutionId = data.id ?? data.solutionId ?? data.data?.id ?? null;
-      const serverName = data.name ?? data.data?.name ?? null;
+      let serverSolutionId = data.solutionId ?? null;
+      const serverFileName = data.fileName ?? null;
+      if (!serverSolutionId && res.headers?.location) {
+        const m = String(res.headers.location).match(/\/api\/solutions\/(\d+)$/);
+        if (m) serverSolutionId = Number(m[1]);
+      }
 
-      // 3) solutionId 갱신
+      // solutionId 갱신
       setProblems(prev =>
         prev.map(p =>
           p.id === uiId
             ? {
               ...p,
               solutionId: serverSolutionId ?? null,
-              title: serverName || p.title,
-              selectedLanguage: data.language || p.selectedLanguage,
+              title: serverFileName || p.title,
             }
             : p
         )
@@ -487,87 +546,98 @@ function WorkspacePage() {
           </div>
         </div>
         <hr className={styles.workSpaceButtonsUnderline} />
-
-        {unified.length > 0 ? (
-          <ul className={styles.folderList} onDragOver={handleListDragOver} onDrop={handleListDropToRoot}>
-            {renderDropZone(0)}
-            {unified.map((item, index) => {
-              const depth = item._kind === 'folder' ? getFolderDepth(item.id) : getProblemDepth(item);
-
-              if (item._kind === 'folder') {
-                return (
-                  <React.Fragment key={`row-folder-${item.id}`}>
-                    <li
-                      className={`${styles.row} ${item.id === dragOverFolderId ? styles.dragOver : ''}`}
-                      draggable
-                      onDragStart={(e) => handleDragStart('folder', item.id, e)}
-                      onDragOver={(e) => handleDragOverFolder(item.id, e)}
-                      onDragLeave={(e) => handleDragLeaveFolder(item.id, e)}
-                      onDrop={(e) => handleDropOnFolder(item.id, e)}
-                    >
-                      {/* 줄은 li.row::after가, 들여쓰기는 안쪽에서만 */}
-                      <div className={styles.rowContent}>
-                        <div
-                          className={styles.indented}
-                          style={{ '--depth': String(depth) }}
-                          onClick={() => setSelectedFolderId(item.id)}
+  
+        {/* 1. 로딩 중일 때 메시지 */}
+        {loading && <div className={styles.loadingMessage || styles.workSpaceBox}>작업 공간을 불러오는 중...</div>}
+        
+        {/* 2. 에러 발생 시 메시지 */}
+        {error && <div className={styles.errorMessage || styles.workSpaceBox}>{error}</div>}
+        
+        {/* 3. 로딩도 아니고 에러도 아닐 때, 실제 내용 표시 */}
+        {!loading && !error && (
+          <> {/* 여러 요소를 반환하기 위해 Fragment 사용 */}
+            {unified.length > 0 ? (
+              <ul className={styles.folderList} onDragOver={handleListDragOver} onDrop={handleListDropToRoot}>
+                {renderDropZone(0)}
+                {unified.map((item, index) => {
+                  const depth = item._kind === 'folder' ? getFolderDepth(item.id) : getProblemDepth(item);
+  
+                  if (item._kind === 'folder') {
+                    return (
+                      <React.Fragment key={`row-folder-${item.id}`}>
+                        <li
+                          className={`${styles.row} ${item.id === dragOverFolderId ? styles.dragOver : ''}`}
+                          draggable
+                          onDragStart={(e) => handleDragStart('folder', item.id, e)}
+                          onDragOver={(e) => handleDragOverFolder(item.id, e)}
+                          onDragLeave={(e) => handleDragLeaveFolder(item.id, e)}
+                          onDrop={(e) => handleDropOnFolder(item.id, e)}
                         >
-                          <WorkSpaceFolderItem
-                            id={item.id}
-                            initialName={item.name}
-                            isInitialEditing={item.isEditing}
-                            pending={item._pending}
-                            onNameConfirm={(newName) => handleFolderNameConfirm(item.id, newName)}
-                            onDelete={() => handleDeleteFolder(item.id)}
-                            onFolderClick={setSelectedFolderId}
-                          />
+                          {/* 줄은 li.row::after가, 들여쓰기는 안쪽에서만 */}
+                          <div className={styles.rowContent}>
+                            <div
+                              className={styles.indented}
+                              style={{ '--depth': String(depth) }}
+                              onClick={() => setSelectedFolderId(item.id)}
+                            >
+                              <WorkSpaceFolderItem
+                                id={item.id}
+                                initialName={item.name}
+                                isInitialEditing={item.isEditing}
+                                pending={item._pending}
+                                onNameConfirm={(newName) => handleFolderNameConfirm(item.id, newName)}
+                                onDelete={() => handleDeleteFolder(item.id)}
+                                onFolderClick={setSelectedFolderId}
+                              />
+                            </div>
+                          </div>
+                        </li>
+                        {renderDropZone(index + 1)}
+                      </React.Fragment>
+                    );
+                  }
+  
+                  return (
+                    <React.Fragment key={`row-problem-${item.id}`}>
+                      <li
+                        className={styles.row}
+                        draggable
+                        onDragStart={(e) => handleDragStart('problem', item.id, e)}
+                      >
+                        <div className={styles.rowContent}>
+                          <div className={styles.indented} style={{ '--depth': String(depth) }}>
+                            <WorkSpaceProblemList
+                              id={item.id}
+                              problemId={item.problemId}
+                              solutionId={item.solutionId}
+                              initialTitle={item.title}
+                              selectedLanguage={item.selectedLanguage}
+                              isInitialEditing={item.isEditing}
+                              onFileNameConfirm={(name) => handleSolutionRename(item.id, name)}
+                              onDelete={() => handleDeleteSolution(item.id)}
+                              onDoubleClick={() => {
+                                if (!item.problemId) return;
+                                navigate(`/solve/${item.problemId}`, {
+                                  state: { solutionId: item.solutionId ?? null }
+                                });
+                              }}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    </li>
-                    {renderDropZone(index + 1)}
-                  </React.Fragment>
-                );
-              }
-
-              return (
-                <React.Fragment key={`row-problem-${item.id}`}>
-                  <li
-                    className={styles.row}
-                    draggable
-                    onDragStart={(e) => handleDragStart('problem', item.id, e)}
-                  >
-                    <div className={styles.rowContent}>
-                      <div className={styles.indented} style={{ '--depth': String(depth) }}>
-                        <WorkSpaceProblemList
-                          id={item.id}
-                          problemId={item.problemId}
-                          solutionId={item.solutionId}
-                          initialTitle={item.title}
-                          selectedLanguage={item.selectedLanguage}
-                          isInitialEditing={item.isEditing}
-                          onFileNameConfirm={(name) => handleSolutionRename(item.id, name)}
-                          onDelete={() => handleDeleteSolution(item.id)}
-                          onDoubleClick={() => {
-                            if (!item.problemId) return;
-                            navigate(`/solve/${item.problemId}`, {
-                              state: { solutionId: item.solutionId ?? null }
-                            });
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </li>
-                  {renderDropZone(index + 1)}
-                </React.Fragment>
-              );
-            })}
-          </ul>
-        ) : (
-          <div className={styles.workSpaceBox}>
-            <div className={styles.workSpaceBoxContext}>새 폴더나 문제를 생성해주세요.</div>
-          </div>
+                      </li>
+                      {renderDropZone(index + 1)}
+                    </React.Fragment>
+                  );
+                })}
+              </ul>
+            ) : (
+              <div className={styles.workSpaceBox}>
+                <div className={styles.workSpaceBoxContext}>새 폴더나 문제를 생성해주세요.</div>
+              </div>
+            )}
+          </>
         )}
-
+  
         <WorkSpaceProblemModal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
@@ -578,4 +648,4 @@ function WorkspacePage() {
   );
 }
 
-export default WorkspacePage; 
+export default WorkspacePage;

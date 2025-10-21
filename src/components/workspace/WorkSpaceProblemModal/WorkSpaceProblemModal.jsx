@@ -67,12 +67,24 @@ const WorkSpaceProblemModal = ({ isOpen, onClose, onSelectProblem }) => {
   const currentProblems = problemsByPage[currentPage - 1] || [];
 
   // 현재 표시할 문제 목록 (검색 중이면 검색 결과, 아니면 현재 페이지 문제)
-  const displayProblems = isSearching
-    ? filteredProblems.slice(
-      (searchResultPage - 1) * itemsPerPage,
-      searchResultPage * itemsPerPage
-    )
-    : currentProblems;
+  let displayProblems = isSearching
+  ? filteredProblems.slice(
+    (searchResultPage - 1) * itemsPerPage,
+    searchResultPage * itemsPerPage
+  )
+  : currentProblems;
+
+  // 빈 행 채우기
+  if (displayProblems.length < itemsPerPage) {
+  const emptyRows = Array(itemsPerPage - displayProblems.length).fill().map((_, index) => ({
+    no: `empty-${index}`,
+    title: '',
+    level: '',
+    algorithm: '',
+    isEmpty: true
+  }));
+  displayProblems = [...displayProblems, ...emptyRows];
+  }
 
   // 이전 페이지로 이동
   const handlePrevPage = () => {
@@ -169,18 +181,20 @@ const WorkSpaceProblemModal = ({ isOpen, onClose, onSelectProblem }) => {
             <tbody>
               {displayProblems.length > 0 ? (
                 displayProblems.map((problem) => (
-                  <tr key={problem.no}>
-                    <td>{problem.no}</td>
-                    <td>{problem.title}</td>
-                    <td>{problem.level}</td>
-                    <td>{problem.algorithm}</td>
+                  <tr key={problem.no} className={problem.isEmpty ? styles.emptyRow : ''}>
+                    <td>{problem.isEmpty ? '' : problem.no}</td>
+                    <td>{problem.isEmpty ? '' : problem.title}</td>
+                    <td>{problem.isEmpty ? '' : problem.level}</td>
+                    <td>{problem.isEmpty ? '' : problem.algorithm}</td>
                     <td>
-                      <button
-                        className={styles.problemAddBtn}
-                        onClick={() => handleAddProblem(problem)}
-                      >
-                        <img src={PlusIcon} alt="추가" />
-                      </button>
+                      {!problem.isEmpty && (
+                        <button
+                          className={styles.problemAddBtn}
+                          onClick={() => handleAddProblem(problem)}
+                        >
+                          <img src={PlusIcon} alt="추가" />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))

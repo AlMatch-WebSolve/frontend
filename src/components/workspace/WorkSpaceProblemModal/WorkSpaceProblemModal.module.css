@@ -159,3 +159,9 @@
   border-radius: 5px;
   align-items: center;
 }
+
+/* 남는 칸 */
+.emptyRow {
+  height: 45px;
+  background-color: transparent;
+}
