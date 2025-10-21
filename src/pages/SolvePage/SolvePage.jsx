@@ -13,7 +13,7 @@ function SolvePage() {
 
   const { problemId } = useParams();
   const location = useLocation();
-  const solutionId = location.state?.solutionId ?? null;
+  const solutionId = location.state?.solutionId;
 
   const [problemErr, setProblemErr] = useState(null);
   const [problemLoaded, setProblemLoaded] = useState(false);
@@ -47,7 +47,7 @@ function SolvePage() {
       <div className={styles.solveContainer}>
         <CodingPanel
           onTabChange={setCodingTab}
-          solutionId={Number(solutionId)}
+          solutionId={solutionId}
           problemId={Number(problemId)}
         />
         {codingTab === 'code' ? <ResultPanel activeTab={resultActiveTab} /> : null}
@@ -56,3 +56,4 @@ function SolvePage() {
   );
 }
 export default SolvePage;
+
