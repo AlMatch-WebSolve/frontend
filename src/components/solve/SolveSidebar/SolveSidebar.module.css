@@ -100,6 +100,7 @@
   font-weight: regular;
   flex-shrink: 0;
   padding-right: 5px;
+  font-family: var(--font-family-main);
 }
 
 .icon-button-wrapper {
