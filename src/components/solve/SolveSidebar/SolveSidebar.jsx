@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import apiClient from '../api/apiClient';
+import apiClient from '../../../api/apiClient';
 import styles from './SolveSidebar.module.css';
 import SidebarIcon from '../../../assets/icons/SidebarIcon.svg';
 import MyFolderIcon from '../../../assets/icons/MyFolderIcon.svg';
