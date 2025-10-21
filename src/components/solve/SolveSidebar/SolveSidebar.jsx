@@ -9,6 +9,21 @@ import AddFileIcon from '../../../assets/icons/AddFileIcon.svg';
 import FolderIcon from '../../../assets/icons/FolderIcon.svg';
 import FileIcon from '../../../assets/icons/FileIcon.svg';
 import MoreIcon from '../../../assets/icons/MoreIcon.svg';
+import WorkSpaceProblemModal from '../../../components/workspace/WorkSpaceProblemModal/WorkSpaceProblemModal';
+
+const sortFileTree = (a, b) => {
+  // 1. 타입 비교 (폴더 우선)
+  if (a.type === 'FOLDER' && b.type === 'FILE') {
+    return -1; // a(폴더)가 b(파일)보다 앞
+  }
+  if (a.type === 'FILE' && b.type === 'FOLDER') {
+    return 1; // a(파일)가 b(폴더)보다 뒤
+  }
+
+  // 2. 타입이 같은 경우 (둘다 폴더거나 둘다 파일)
+  // 이름을 기준으로 오름차순 정렬
+  return a.name.localeCompare(b.name);
+};
 
 const FileTreeItem = ({ item }) => {
   // 1. 아이템이 'FOLDER'일 경우
@@ -66,6 +81,7 @@ function SolveSidebar() {
   const [fileTree, setFileTree] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const toggleSidebar = () => {
     setIsExpanded(!isExpanded);
@@ -74,22 +90,51 @@ function SolveSidebar() {
   useEffect(() => {
     const fetchFileTree = async () => {
       try {
-        setIsLoading(true); // 로딩 시작
+        setIsLoading(true);
         setError(null);
-        // API 호출
         const response = await apiClient.get('/api/workspace/tree');
-        // 응답 데이터를 state에 저장 (보통 response.data에 담겨옴)
-        setFileTree(response.data || []);
+        const data = response.data || [];
+
+        data.sort(sortFileTree);
+        setFileTree(data);
       } catch (err) {
         console.error('Failed to fetch workspace tree:', err);
-        setError(err); // 에러 state에 저장
+        setError(err);
       } finally {
-        setIsLoading(false); // 로딩 종료
+        setIsLoading(false);
       }
     };
 
     fetchFileTree();
   }, []);
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleSelectProblem = (problemData) => {
+    // 1. fileTree 상태에 맞는 새 파일 객체 생성
+    const newFile = {
+      id: crypto.randomUUID(), // 임시 고유 ID 생성
+      name: `${problemData.title}.${problemData.selectedLanguage}`, // 예: "문제제목.java"
+      type: 'FILE',
+      children: [], // 파일은 자식이 없음
+    };
+
+    // 2. fileTree 상태 업데이트 (새 파일을 목록 맨 위에 추가)
+    setFileTree((prevTree) => {
+      const newTree = [...prevTree, newFile];
+      newTree.sort(sortFileTree);
+      return newTree;
+    });
+
+    // 3. 모달 닫기
+    handleCloseModal();
+  };
 
   const innerWrapperClasses = `${styles.sidebarInnerWrapper} ${
     isExpanded ? styles.expanded : styles.collapsed
@@ -143,7 +188,10 @@ function SolveSidebar() {
           <>
             {/* 2. 문제 추가 버튼 */}
             <div className={styles.buttonContainer}>
-              <button className={styles.addProblemButton}>
+              <button
+                className={styles.addProblemButton}
+                onClick={handleOpenModal}
+              >
                 <img src={AddProblemIcon} alt='문제 추가'></img>
                 <span>문제 추가</span>
               </button>
@@ -161,6 +209,12 @@ function SolveSidebar() {
           </>
         )}
       </div>
+
+      <WorkSpaceProblemModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSelectProblem={handleSelectProblem}
+      />
     </div>
   );
 }
