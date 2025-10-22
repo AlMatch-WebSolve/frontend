@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import WorkSpaceProblemModal from '../../components/workspace/WorkSpaceProblemModal/WorkSpaceProblemModal.jsx';
 import WorkSpaceProblemList from '../../components/workspace/WorkSpaceProblemList/WorkSpaceProblemList.jsx';
@@ -6,6 +12,39 @@ import WorkSpaceFolderItem from '../../components/workspace/WorkSpaceFolderItem/
 import '../../styles/global.css';
 import styles from './WorkspacePage.module.css';
 import apiClient from '../../api/apiClient.js';
+
+const sortNodes = (a, b) => {
+  // 타입으로 정렬 (폴더 우선)
+  if (a.type === 'FOLDER' && b.type === 'FILE') {
+    // <<< API 응답 type 사용 ('FOLDER', 'FILE')
+    return -1;
+  }
+  if (a.type === 'FILE' && b.type === 'FOLDER') {
+    // <<< API 응답 type 사용
+    return 1;
+  }
+  // 타입이 같으면 이름으로 정렬
+  const nameA = a.name || '';
+  const nameB = b.name || '';
+  return nameA.localeCompare(nameB);
+};
+
+// 2. toUnified 함수에서 사용할 정렬 함수 (unified 객체 기준)
+const sortUnifiedItems = (a, b) => {
+  // 타입으로 정렬 (폴더 우선)
+  if (a._kind === 'folder' && b._kind === 'problem') {
+    // <<< unified 객체 _kind 사용 ('folder', 'problem')
+    return -1;
+  }
+  if (a._kind === 'problem' && b._kind === 'folder') {
+    // <<< unified 객체 _kind 사용
+    return 1;
+  }
+  // 타입이 같으면 이름/제목으로 정렬
+  const nameA = a.name || a.title || '';
+  const nameB = b.name || b.title || '';
+  return nameA.localeCompare(nameB);
+};
 
 function WorkspacePage() {
   const navigate = useNavigate();
@@ -18,17 +57,57 @@ function WorkspacePage() {
   const [loading, setLoading] = useState(false);
 
   const toUnified = (foldersArg = folders, problemsArg = problems) => {
-    const all = [
-      ...foldersArg.map(f => ({ ...f, _kind: 'folder' })),
-      ...problemsArg.map(p => ({ ...p, _kind: 'problem' })),
+    // 1. 폴더와 문제를 합칩니다.
+    const allItems = [
+      ...foldersArg.map((f) => ({ ...f, _kind: 'folder' })),
+      ...problemsArg.map((p) => ({ ...p, _kind: 'problem' })),
     ];
-    return all.sort((a, b) => (a.order ?? a.createdAt ?? 0) - (b.order ?? b.createdAt ?? 0));
+
+    // 2. 빠른 조회를 위한 Map을 만듭니다.
+    const itemMap = new Map();
+    allItems.forEach((item) => itemMap.set(item.id, item));
+
+    // 3. 부모 ID별로 자식들을 그룹화합니다 (Adjacency List).
+    const childrenByParent = new Map();
+    allItems.forEach((item) => {
+      const parentId = item._kind === 'folder' ? item.parentId : item.folderId;
+      const key =
+        parentId === null || parentId === undefined ? 'root' : parentId; // 루트 항목은 'root' 키 사용
+      if (!childrenByParent.has(key)) {
+        childrenByParent.set(key, []);
+      }
+      childrenByParent.get(key).push(item);
+    });
+
+    // 4. 각 부모 그룹 내에서 자식들을 정렬합니다.
+    childrenByParent.forEach((children, parentId) => {
+      children.sort(sortUnifiedItems); // 위에서 정의한 정렬 함수 사용
+    });
+
+    // 5. 깊이 우선 탐색(DFS)을 사용하여 정렬된 평탄화 목록을 재구성합니다.
+    const sortedUnifiedList = [];
+    const buildSortedList = (parentId) => {
+      const key =
+        parentId === null || parentId === undefined ? 'root' : parentId;
+      const children = childrenByParent.get(key) || [];
+      for (const child of children) {
+        sortedUnifiedList.push(child); // 정렬된 순서대로 리스트에 추가
+        if (child._kind === 'folder') {
+          buildSortedList(child.id); // 이 폴더의 자식들을 재귀적으로 추가
+        }
+      }
+    };
+
+    buildSortedList(null); // 루트부터 시작하여 목록 구축
+
+    // 6. (선택 사항) 최종 정렬된 목록을 기준으로 order 값을 재할당합니다 (드래그앤드롭 등에서 필요할 수 있음).
+    return sortedUnifiedList.map((item, index) => ({ ...item, order: index }));
   };
   const unified = useMemo(() => toUnified(), [folders, problems]);
 
   const folderMap = useMemo(() => {
     const m = new Map();
-    folders.forEach(f => m.set(f.id, f)); // id는 숫자만 사용
+    folders.forEach((f) => m.set(f.id, f)); // id는 숫자만 사용
     return m;
   }, [folders]);
 
@@ -41,7 +120,8 @@ function WorkspacePage() {
     }
     return d;
   };
-  const getProblemDepth = (p) => (p.folderId != null ? getFolderDepth(p.folderId) + 1 : 0);
+  const getProblemDepth = (p) =>
+    p.folderId != null ? getFolderDepth(p.folderId) + 1 : 0;
 
   const isDescendantOfFolder = (item, folderId) => {
     if (!folderId) return false;
@@ -63,42 +143,53 @@ function WorkspacePage() {
   };
 
   // 트리
-  const buildFlatFromTree = useCallback((nodes, parentId, accFolders, accProblems, orderRef) => {
-    if (!Array.isArray(nodes)) return;
+  const buildFlatFromTree = useCallback(
+    (nodes, parentId, accFolders, accProblems, orderRef) => {
+      if (!Array.isArray(nodes)) return;
 
-    for (const n of nodes) {
-      if (n.type === 'FOLDER') {
-        const id = Number(n.id);
-        const parent = parentId != null ? Number(parentId) : null;
+      const sortedNodes = [...nodes].sort(sortNodes);
 
-        accFolders.push({
-          id,
-          name: n.name,
-          parentId: parent === 0 ? null : parent, // 만약 서버가 0을 보냈다면 null로 정규화
-          isEditing: false,
-          createdAt: orderRef.value,
-          order: orderRef.value++,
-        });
+      for (const n of sortedNodes) {
+        if (n.type === 'FOLDER') {
+          const id = Number(n.id);
+          const parent = parentId != null ? Number(parentId) : null;
 
-        buildFlatFromTree(n.children || [], id, accFolders, accProblems, orderRef);
-      } else if (n.type === 'FILE') {
-        const id = Number(n.id);
-        const parent = parentId != null ? Number(parentId) : null;
+          accFolders.push({
+            id,
+            name: n.name,
+            parentId: parent === 0 ? null : parent, // 만약 서버가 0을 보냈다면 null로 정규화
+            isEditing: false,
+            createdAt: orderRef.value,
+            order: orderRef.value++,
+          });
 
-        accProblems.push({
-          id,                // UI key = 서버 파일 ID (숫자)
-          solutionId: id,    // solve 라우팅에 사용 (숫자)
-          problemId: n.problemId ?? null,
-          title: n.name,
-          folderId: parent === 0 ? null : parent, // 0 방어
-          isEditing: false,
-          createdAt: orderRef.value,
-          order: orderRef.value++,
-          selectedLanguage: n.language, // 서버가 주면 사용
-        });
+          buildFlatFromTree(
+            n.children || [],
+            id,
+            accFolders,
+            accProblems,
+            orderRef,
+          );
+        } else if (n.type === 'FILE') {
+          const id = Number(n.id);
+          const parent = parentId != null ? Number(parentId) : null;
+
+          accProblems.push({
+            id, // UI key = 서버 파일 ID (숫자)
+            solutionId: id, // solve 라우팅에 사용 (숫자)
+            problemId: n.problemId ?? null,
+            title: n.name,
+            folderId: parent === 0 ? null : parent, // 0 방어
+            isEditing: false,
+            createdAt: orderRef.value,
+            order: orderRef.value++,
+            selectedLanguage: n.language, // 서버가 주면 사용
+          });
+        }
       }
-    }
-  }, []);
+    },
+    [],
+  );
 
   // ---------- GET 경쟁 방지 ----------
   const inflightRef = useRef({ seq: 0, controller: null });
@@ -111,7 +202,9 @@ function WorkspacePage() {
 
     setLoading(true);
     try {
-      const res = await apiClient.get('/api/workspace/tree', { signal: controller.signal });
+      const res = await apiClient.get('/api/workspace/tree', {
+        signal: controller.signal,
+      });
       if (seq !== inflightRef.current.seq) return; // 뒤늦은 응답 무시
 
       const tree = res.data || [];
@@ -138,28 +231,37 @@ function WorkspacePage() {
   }, [fetchTree, location.key]);
 
   useEffect(() => {
-    const onFocus = () => { if (!loading) fetchTree(); };
+    const onFocus = () => {
+      if (!loading) fetchTree();
+    };
     window.addEventListener('focus', onFocus);
     return () => window.removeEventListener('focus', onFocus);
   }, [fetchTree, loading]);
 
   const getErrMsg = (e, fallback) =>
-    e?.response?.data?.message || e?.response?.data?.error || e?.message || fallback;
+    e?.response?.data?.message ||
+    e?.response?.data?.error ||
+    e?.message ||
+    fallback;
 
   const toNumericOrNullBody = (key, raw) => {
     const n = Number(raw);
-    if (raw == null || !Number.isFinite(n)) return {};            // 루트: 키 생략
-    return { [key]: n };                                          // 하위: 숫자만
+    if (raw == null || !Number.isFinite(n)) return {}; // 루트: 키 생략
+    return { [key]: n }; // 하위: 숫자만
   };
 
-  // 파일 이름 변경 / 생성 
+  // 파일 이름 변경 / 생성
   const handleSolutionRename = (uiId, newName) => {
     const name = (newName ?? '').trim();
     if (!name) return;
-    const target = problems.find(p => p.id === uiId);
+    const target = problems.find((p) => p.id === uiId);
     if (!target) return;
 
-    setProblems(prev => prev.map(p => (p.id === uiId ? { ...p, title: name, isEditing: false } : p)));
+    setProblems((prev) =>
+      prev.map((p) =>
+        p.id === uiId ? { ...p, title: name, isEditing: false } : p,
+      ),
+    );
 
     if (!target.solutionId) {
       (async () => {
@@ -169,7 +271,9 @@ function WorkspacePage() {
           const parentNum = Number(parentRaw);
           if (parentRaw != null && !Number.isFinite(parentNum)) {
             alert('상위 폴더를 먼저 생성(이름 확정)해 주세요.');
-            setProblems(prev => prev.map(p => p.id === uiId ? { ...p, isEditing: true } : p));
+            setProblems((prev) =>
+              prev.map((p) => (p.id === uiId ? { ...p, isEditing: true } : p)),
+            );
             return;
           }
 
@@ -189,15 +293,19 @@ function WorkspacePage() {
               alert(getErrMsg(e, '파일 이름 동기화에 실패했습니다.'));
             }
             // 임시 id → 서버 id로 치환 (id와 solutionId 통일)
-            setProblems(prev => prev.map(p =>
-              p.id === uiId ? { ...p, id: serverId, solutionId: serverId, title: name } : p
-            ));
+            setProblems((prev) =>
+              prev.map((p) =>
+                p.id === uiId
+                  ? { ...p, id: serverId, solutionId: serverId, title: name }
+                  : p,
+              ),
+            );
           }
         } catch (e) {
           console.error('파일 생성 실패:', e?.response?.data || e);
           alert(getErrMsg(e, '파일 생성에 실패했습니다.'));
           // 실패 시 드래프트 제거
-          setProblems(prev => prev.filter(p => p.id !== uiId));
+          setProblems((prev) => prev.filter((p) => p.id !== uiId));
         }
       })();
       return;
@@ -205,39 +313,52 @@ function WorkspacePage() {
 
     (async () => {
       try {
-        const res = await apiClient.patch(`/api/solutions/${target.solutionId}`, { name });
-        if (res.status < 200 || res.status >= 300) throw new Error('파일 이름 변경 실패');
+        const res = await apiClient.patch(
+          `/api/solutions/${target.solutionId}`,
+          { name },
+        );
+        if (res.status < 200 || res.status >= 300)
+          throw new Error('파일 이름 변경 실패');
       } catch (e) {
         console.error('파일 이름 변경 실패:', e?.response?.data || e);
-        const msg = e?.response?.status === 404 ? '파일을 찾을 수 없습니다.' : getErrMsg(e, '파일 이름 수정에 실패했습니다.');
+        const msg =
+          e?.response?.status === 404
+            ? '파일을 찾을 수 없습니다.'
+            : getErrMsg(e, '파일 이름 수정에 실패했습니다.');
         alert(msg);
         fetchTree(); // 서버 실패 시 최신 상태로 동기화
       }
     })();
   };
 
-  // 파일 삭제 
+  // 파일 삭제
   const handleDeleteSolution = (uiId) => {
-    const target = problems.find(p => p.id === uiId);
+    const target = problems.find((p) => p.id === uiId);
     if (!target) return;
 
     // 드래프트면 그냥 UI에서 제거
     if (!target.solutionId) {
-      setProblems(prev => prev.filter(p => p.id !== uiId));
+      setProblems((prev) => prev.filter((p) => p.id !== uiId));
       return;
     }
 
     // 낙관적 업데이트
     const prevProblems = problems;
-    setProblems(prev => prev.filter(p => p.id !== uiId));
+    setProblems((prev) => prev.filter((p) => p.id !== uiId));
 
     (async () => {
       try {
-        const res = await apiClient.delete(`/api/solutions/${target.solutionId}`);
-        if (res.status < 200 || res.status >= 300) throw new Error('파일 삭제 실패');
+        const res = await apiClient.delete(
+          `/api/solutions/${target.solutionId}`,
+        );
+        if (res.status < 200 || res.status >= 300)
+          throw new Error('파일 삭제 실패');
       } catch (e) {
         console.error('파일 삭제 실패:', e?.response?.data || e);
-        const msg = e?.response?.status === 404 ? '파일을 찾을 수 없습니다.' : getErrMsg(e, '파일 삭제에 실패했습니다.');
+        const msg =
+          e?.response?.status === 404
+            ? '파일을 찾을 수 없습니다.'
+            : getErrMsg(e, '파일 삭제에 실패했습니다.');
         alert(msg);
         // 롤백
         setProblems(prevProblems);
@@ -245,21 +366,28 @@ function WorkspacePage() {
     })();
   };
 
-  // 폴더 이름 확정(생성/수정) 
+  // 폴더 이름 확정(생성/수정)
   const handleFolderNameConfirm = (folderId, newName) => {
     const name = newName && newName.trim() ? newName.trim() : '새 폴더';
     // UI 먼저 업데이트(입력 종료)
-    setFolders(prev => prev.map(x => (x.id === folderId ? { ...x, name, isEditing: false } : x)));
+    setFolders((prev) =>
+      prev.map((x) =>
+        x.id === folderId ? { ...x, name, isEditing: false } : x,
+      ),
+    );
 
     // temp 폴더 → POST로 서버 생성
     if (typeof folderId === 'string' && folderId.startsWith('temp-folder-')) {
-      const parentRaw = folders.find(f => f.id === folderId)?.parentId ?? null;
+      const parentRaw =
+        folders.find((f) => f.id === folderId)?.parentId ?? null;
       const parentNum = Number(parentRaw);
 
       // 상위가 temp(문자열)면 생성 차단
       if (parentRaw != null && !Number.isFinite(parentNum)) {
         alert('상위 폴더를 먼저 확정해 주세요.');
-        setFolders(prev => prev.map(f => f.id === folderId ? { ...f, isEditing: true } : f));
+        setFolders((prev) =>
+          prev.map((f) => (f.id === folderId ? { ...f, isEditing: true } : f)),
+        );
         return;
       }
 
@@ -276,13 +404,18 @@ function WorkspacePage() {
           if (!Number.isFinite(serverId)) return;
 
           // temp id → 서버 id 치환
-          setFolders(prev => prev.map(f => f.id === folderId ? { ...f, id: serverId } : f));
+          setFolders((prev) =>
+            prev.map((f) => (f.id === folderId ? { ...f, id: serverId } : f)),
+          );
         } catch (e) {
           console.error('폴더 생성 실패:', e?.response?.data || e);
-          const msg = e?.response?.status === 400 ? '폴더명이 중복되었습니다.' : getErrMsg(e, '폴더 생성에 실패했습니다.');
+          const msg =
+            e?.response?.status === 400
+              ? '폴더명이 중복되었습니다.'
+              : getErrMsg(e, '폴더 생성에 실패했습니다.');
           alert(msg);
           // 실패 시 드래프트 제거
-          setFolders(prev => prev.filter(f => f.id !== folderId));
+          setFolders((prev) => prev.filter((f) => f.id !== folderId));
         }
       })();
       return;
@@ -291,8 +424,12 @@ function WorkspacePage() {
     // 기존 폴더 → PATCH
     (async () => {
       try {
-        const res = await apiClient.patch(`/api/workspace/folders/${folderId}`, { name });
-        if (res.status < 200 || res.status >= 300) throw new Error('폴더 이름 변경 실패');
+        const res = await apiClient.patch(
+          `/api/workspace/folders/${folderId}`,
+          { name },
+        );
+        if (res.status < 200 || res.status >= 300)
+          throw new Error('폴더 이름 변경 실패');
       } catch (e) {
         console.error('폴더 이름 변경 실패:', e?.response?.data || e);
         const msg =
@@ -307,17 +444,24 @@ function WorkspacePage() {
     })();
   };
 
-  // 폴더 삭제 
+  // 폴더 삭제
   const handleDeleteFolder = (folderId) => {
     // 낙관적 업데이트: 하위 전체 제거
     const unifiedNow = toUnified();
     const nextUnified = unifiedNow.filter(
-      (x) => !(x._kind === 'folder' && (x.id === folderId || isDescendantOfFolder(x, folderId))) &&
-        !(x._kind === 'problem' && isDescendantOfFolder(x, folderId))
+      (x) =>
+        !(
+          x._kind === 'folder' &&
+          (x.id === folderId || isDescendantOfFolder(x, folderId))
+        ) && !(x._kind === 'problem' && isDescendantOfFolder(x, folderId)),
     );
     const withOrder = nextUnified.map((it, idx) => ({ ...it, order: idx }));
-    const nextFolders = withOrder.filter(x => x._kind === 'folder').map(({ _kind, ...r }) => r);
-    const nextProblems = withOrder.filter(x => x._kind === 'problem').map(({ _kind, ...r }) => r);
+    const nextFolders = withOrder
+      .filter((x) => x._kind === 'folder')
+      .map(({ _kind, ...r }) => r);
+    const nextProblems = withOrder
+      .filter((x) => x._kind === 'problem')
+      .map(({ _kind, ...r }) => r);
 
     const prevFolders = folders;
     const prevProblems = problems;
@@ -325,17 +469,26 @@ function WorkspacePage() {
     setFolders(nextFolders);
     setProblems(nextProblems);
 
-    if (selectedFolderId === folderId || isFolderDescendantId(selectedFolderId, folderId)) {
+    if (
+      selectedFolderId === folderId ||
+      isFolderDescendantId(selectedFolderId, folderId)
+    ) {
       setSelectedFolderId(null);
     }
 
     (async () => {
       try {
-        const res = await apiClient.delete(`/api/workspace/folders/${folderId}`);
-        if (res.status < 200 || res.status >= 300) throw new Error('폴더 삭제 실패');
+        const res = await apiClient.delete(
+          `/api/workspace/folders/${folderId}`,
+        );
+        if (res.status < 200 || res.status >= 300)
+          throw new Error('폴더 삭제 실패');
       } catch (e) {
         console.error('폴더 삭제 실패:', e?.response?.data || e);
-        const msg = e?.response?.status === 404 ? '폴더를 찾을 수 없습니다.' : getErrMsg(e, '폴더 삭제에 실패했습니다.');
+        const msg =
+          e?.response?.status === 404
+            ? '폴더를 찾을 수 없습니다.'
+            : getErrMsg(e, '폴더 삭제에 실패했습니다.');
         alert(msg);
         // 롤백
         setFolders(prevFolders);
@@ -350,7 +503,7 @@ function WorkspacePage() {
     const now = Date.now();
     const tempId = `temp-folder-${now}`;
     // 화면에만 보이는 드래프트 추가
-    setFolders(prev => [
+    setFolders((prev) => [
       ...prev,
       {
         id: tempId,
@@ -379,11 +532,11 @@ function WorkspacePage() {
     const tempId = `temp-sol-${now}`;
 
     // 화면 드래프트 파일 추가
-    setProblems(prev => [
+    setProblems((prev) => [
       ...prev,
       {
         id: tempId,
-        solutionId: null,       // 서버 미생성
+        solutionId: null, // 서버 미생성
         problemId,
         title: problem.title || `문제 ${rawProblemId}`,
         folderId: parentId,
@@ -404,10 +557,18 @@ function WorkspacePage() {
         <div className={styles.workSpaceButtonsHeaderContainer}>
           <span className={styles.workSpaceButtonsRecent}>최근 항목</span>
           <div className={styles.workSpaceButtons}>
-            <button className={styles.workSpaceButtonsNewfolder} onClick={handleNewFolder} disabled={loading}>
+            <button
+              className={styles.workSpaceButtonsNewfolder}
+              onClick={handleNewFolder}
+              disabled={loading}
+            >
               새 폴더
             </button>
-            <button className={styles.workSpaceButtonsNewproblem} onClick={handleNewProblem} disabled={loading}>
+            <button
+              className={styles.workSpaceButtonsNewproblem}
+              onClick={handleNewProblem}
+              disabled={loading}
+            >
               문제 생성
             </button>
           </div>
@@ -422,11 +583,18 @@ function WorkspacePage() {
           ) : unified.length > 0 ? (
             <ul className={styles.folderList}>
               {unified.map((item) => {
-                const depth = item._kind === 'folder' ? getFolderDepth(item.id) : getProblemDepth(item);
+                const depth =
+                  item._kind === 'folder'
+                    ? getFolderDepth(item.id)
+                    : getProblemDepth(item);
 
                 if (item._kind === 'folder') {
                   return (
-                    <li key={`row-folder-${item.id}`} className={styles.row} onClick={(e) => e.stopPropagation()}>
+                    <li
+                      key={`row-folder-${item.id}`}
+                      className={styles.row}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className={styles.rowContent}>
                         <div
                           className={styles.indented}
@@ -437,7 +605,9 @@ function WorkspacePage() {
                             id={item.id}
                             initialName={item.name}
                             isInitialEditing={item.isEditing}
-                            onNameConfirm={(newName) => handleFolderNameConfirm(item.id, newName)}
+                            onNameConfirm={(newName) =>
+                              handleFolderNameConfirm(item.id, newName)
+                            }
                             onDelete={() => handleDeleteFolder(item.id)}
                             onFolderClick={setSelectedFolderId}
                           />
@@ -448,17 +618,26 @@ function WorkspacePage() {
                 }
 
                 return (
-                  <li key={`row-problem-${item.id}`} className={styles.row} onClick={(e) => e.stopPropagation()}>
+                  <li
+                    key={`row-problem-${item.id}`}
+                    className={styles.row}
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <div className={styles.rowContent}>
-                      <div className={styles.indented} style={{ '--depth': String(depth) }}>
+                      <div
+                        className={styles.indented}
+                        style={{ '--depth': String(depth) }}
+                      >
                         <WorkSpaceProblemList
-                          id={item.id}                    // = solutionId(서버 생성 전엔 temp 문자열)
-                          solutionId={item.solutionId}    // = id(숫자) / temp면 null
+                          id={item.id} // = solutionId(서버 생성 전엔 temp 문자열)
+                          solutionId={item.solutionId} // = id(숫자) / temp면 null
                           initialTitle={item.title}
                           selectedLanguage={item.selectedLanguage}
                           isInitialEditing={item.isEditing}
                           autoAttachExtension={!item.solutionId}
-                          onFileNameConfirm={(name) => handleSolutionRename(item.id, name)}
+                          onFileNameConfirm={(name) =>
+                            handleSolutionRename(item.id, name)
+                          }
                           onDelete={() => handleDeleteSolution(item.id)}
                           onDoubleClick={() => {
                             if (!item.solutionId) {
@@ -476,7 +655,9 @@ function WorkspacePage() {
             </ul>
           ) : (
             <div className={styles.workSpaceBox}>
-              <div className={styles.workSpaceBoxContext}>새 폴더나 문제를 생성해주세요.</div>
+              <div className={styles.workSpaceBoxContext}>
+                새 폴더나 문제를 생성해주세요.
+              </div>
             </div>
           )}
         </div>
