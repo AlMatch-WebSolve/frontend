@@ -7,6 +7,7 @@
   max-width: 1600px;
   margin: 0 auto;
   padding-top: 80px;
+  /* overflow: auto; */
 }
 .workSpaceButtonsHeaderContainer {
   display: flex;
@@ -54,8 +55,13 @@
   list-style: none;
   padding: 0; margin: 0;
   width: 100%;
-  min-height: 500px;
+  /* overflow-y: auto; */
+  /* max-height: 700px; */
+
 }
+/* .folderList::-webkit-scrollbar {
+  display: none;
+} */
 
 /* 한 줄은 항상 전체폭 라인 (컨텐츠 폭과 무관) */
 .row {

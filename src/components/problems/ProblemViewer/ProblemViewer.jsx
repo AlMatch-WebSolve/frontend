@@ -34,12 +34,56 @@ function toViewerModel(apiData) {
   };
 }
 
-function ProblemViewer({ problemId = 2741 }) {
+function ProblemViewer({ problem, problemId }) {
   const [copiedId, setCopiedId] = useState(null);
-  const [data, setData] = useState(null);
+  const [data, setData] = useState(problem ? toViewerModel(problem) : null);
   const [loading, setLoading] = useState(false);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState(null);
+
+  const isIncomplete = useMemo(() => {
+    if (!problem) return false;
+    const tags = problem.tags;
+    return !Array.isArray(tags) || tags.length === 0;
+  }, [problem]);
+
+  useEffect(() => {
+    if (problem) {
+      setData(toViewerModel(problem));
+      setLoading(false);
+      setNotFound(false);
+      setError(null);
+    }
+  }, [problem]);
+
+  useEffect(() => {
+    if (problem && !isIncomplete) return;
+    const pid = Number(problem?.id ?? problemId);
+    if (!Number.isFinite(pid)) {
+      setData(null); setLoading(false); setNotFound(false); setError(null);
+      return;
+    }
+
+    let mounted = true;
+    setLoading(true); setError(null); setNotFound(false);
+
+    (async () => {
+      try {
+        const res = await apiClient.get(`/api/problems/${pid}`);
+        if (!mounted) return;
+        setData(toViewerModel(res.data));
+      } catch (err) {
+        const res = err?.response;
+        if (!mounted) return;
+        if (res?.status === 404) setNotFound(true);
+        else setError(err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+
+    return () => { mounted = false; };
+  }, [problem, problemId, isIncomplete]);
 
   const levelText = useMemo(() => {
     const level = data?.level;
@@ -61,51 +105,18 @@ function ProblemViewer({ problemId = 2741 }) {
       }
       setCopiedId(key);
       setTimeout(() => setCopiedId(null), 1000);
-    } catch (err) {
-      console.error('Copy failed:', err);
+    } catch {
       alert('복사에 실패했습니다.');
     }
   };
 
-  useEffect(() => {
-    let mounted = true;
-
-    async function fetchProblem() {
-      setLoading(true);
-      setError(null);
-      setNotFound(false);
-
-      try {
-        const res = await apiClient.get(`/api/problems/${problemId}`);
-
-        if (!mounted) return;
-        setData(toViewerModel(res.data));
-      } catch (err) {
-        const res = err?.response;
-        console.error('문제 조회 실패', {
-          url: res?.request?.responseURL || err?.config?.url,
-          status: res?.status,
-          contentType: res?.headers?.['content-type'],
-          body: res?.data,
-        });
-        if (!mounted) return;
-        if (res?.status === 404) setNotFound(true);
-        else setError(err);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-
-    fetchProblem();
-    return () => {
-      mounted = false;
-    };
-  }, [problemId]);
-
-  // 로딩/에러/404 상태 UI
-  if (loading) return <p className={styles.paragraph} role="status">문제 불러오는 중…</p>;
-  if (notFound) return <p className={styles.paragraph} role="alert">문제를 찾을 수 없습니다. (ID: {problemId})</p>;
-  if (error) return <p className={styles.paragraph} role="alert">문제 조회 중 오류가 발생했습니다.</p>;
+  // 상태 UI
+  if (!problem && !Number.isFinite(Number(problemId))) {
+    return <p className={styles.paragraph}>문제 ID가 필요합니다.</p>;
+  }
+  if (loading) return <p className={styles.paragraph}>문제 불러오는 중…</p>;
+  if (notFound) return <p className={styles.paragraph}>문제를 찾을 수 없습니다. (ID: {problemId})</p>;
+  if (error) return <p className={styles.paragraph}>문제 조회 중 오류가 발생했습니다.</p>;
   if (!data) return null;
 
   return (

@@ -2,7 +2,7 @@ import React from 'react';
 import ProblemViewer from '../ProblemViewer/ProblemViewer';
 import styles from './ProblemPanel.module.css';
 
-function ProblemPanel({ problemId }) {
+function ProblemPanel({ problem, problemId }) {
   return (
     <div className={styles.panel}>
       <div className={styles.panelHeader}>
@@ -10,11 +10,11 @@ function ProblemPanel({ problemId }) {
       </div>
       <div className={styles.content}>
         <section className={styles.fill}>
-          <ProblemViewer problemId={problemId} />
+          <ProblemViewer problem={problem} problemId={problemId} />
         </section>
       </div>
     </div>
-  )
+  );
 }
 
-export default ProblemPanel
+export default ProblemPanel;

@@ -36,7 +36,14 @@ const UI_THEME_TO_SERVER = {
   dark: "DARK",
 };
 
-const ensureValidUiLanguage = (val) => (LANGUAGES.includes(val) ? val : "Java");
+// 강화된 정규화: 대소문자/별칭 흡수
+const ensureValidUiLanguage = (val) => {
+  const v = String(val || "").trim().toLowerCase();
+  if (v === "java" || v === "jdk") return "Java";
+  if (v === "javascript" || v === "js" || v === "node" || v === "node.js") return "JavaScript";
+  if (v === "python" || v === "py") return "Python";
+  return "Java";
+};
 
 export default function SettingsModalLocal({
   open,
@@ -63,7 +70,6 @@ export default function SettingsModalLocal({
   useEffect(() => {
     if (!open) return;
 
-    // 절대 뜨지 않도록 초기화
     setConfirmOpen(false);
     setConfirmKind(null);
     setSaving(false);
@@ -74,8 +80,8 @@ export default function SettingsModalLocal({
         setLoading(true);
 
         if (alive) {
+          // 테마만 초기 적용 (언어는 기존 state 유지하여 '기본 Java로 깜빡임' 방지)
           setTheme(initialTheme);
-          setLanguage(initialLanguage);
         }
 
         const { data } = await apiClient.get('/api/users/me/settings');
@@ -85,16 +91,16 @@ export default function SettingsModalLocal({
         const nextTheme = SERVER_THEME_TO_UI[rawTheme] ?? initialTheme; // 'light' | 'dark'
 
         // 언어 매핑 (서버 → UI)
-        const rawLang = String(data?.language ?? initialLanguage).trim().toUpperCase();
-        const mappedUiLang = SERVER_LANG_TO_UI[rawLang] ?? initialLanguage;
-        const nextLang = ensureValidUiLanguage(mappedUiLang);
+        const rawLang = String(data?.language ?? '').trim().toUpperCase();
+        const mappedUiLang = SERVER_LANG_TO_UI[rawLang]; // 없으면 undefined
+        const nextLang = mappedUiLang ? ensureValidUiLanguage(mappedUiLang) : undefined;
 
         if (alive) {
           setTheme(nextTheme);
-          setLanguage(nextLang);
+          // 서버가 언어를 안 주거나 알 수 없는 값이면 '현재 state 유지'
+          if (nextLang) setLanguage(nextLang);
         }
       } catch (e) {
-        // 조회 실패해도 기본값 유지
         console.error('설정 불러오기 실패:', e?.response?.status, e?.response?.data);
       } finally {
         if (alive) setLoading(false);
@@ -103,6 +109,16 @@ export default function SettingsModalLocal({
 
     return () => { alive = false; };
   }, [open, initialTheme, initialLanguage]);
+
+  // 다른 UI(문제 모달 등)에서 바뀐 언어를 즉시 반영
+  useEffect(() => {
+    const handler = (e) => {
+      const next = ensureValidUiLanguage(e?.detail?.uiLanguage);
+      setLanguage(next);
+    };
+    window.addEventListener('settings:languageChanged', handler);
+    return () => window.removeEventListener('settings:languageChanged', handler);
+  }, []);
 
   if (!open) return null;
 
@@ -113,9 +129,10 @@ export default function SettingsModalLocal({
   const handleConfirmSave = async () => {
     setSaving(true);
     try {
+      const uiLangNormalized = ensureValidUiLanguage(language);
       const payload = {
         theme: UI_THEME_TO_SERVER[theme] ?? String(theme).trim().toUpperCase(),         // LIGHT / DARK
-        language: UI_LANG_TO_SERVER[language] ?? String(language).trim().toUpperCase(), // JAVA / JAVASCRIPT / PYTHON
+        language: UI_LANG_TO_SERVER[uiLangNormalized] ?? String(uiLangNormalized).trim().toUpperCase(), // JAVA / JAVASCRIPT / PYTHON
       };
 
       const res = await apiClient.put('/api/users/me/settings', payload, {
@@ -124,6 +141,12 @@ export default function SettingsModalLocal({
 
       if (res.status === 200) {
         onSave?.(payload);
+        // 저장 성공 → 전체 UI 동기화 브로드캐스트 (문제 모달이 즉시 반영)
+        try {
+          window.dispatchEvent(new CustomEvent('settings:languageChanged', {
+            detail: { uiLanguage: uiLangNormalized }, // 'Java' | 'JavaScript' | 'Python'
+          }));
+        } catch { }
         setConfirmOpen(false);
         onClose?.();
       } else {
