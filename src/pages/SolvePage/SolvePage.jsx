@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import SolveSidebar from '../../components/solve/SolveSidebar';
+import SolveSidebar from '../../components/solve/SolveSidebar/SolveSidebar';
 import CodingPanel from '../../components/solve/CodingPanel/CodingPanel';
 import ResultPanel from '../../components/solve/ResultPanel/ResultPanel';
 import ProblemPanel from '../../components/problems/ProblemPanel/ProblemPanel';
