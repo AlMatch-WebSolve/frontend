@@ -81,7 +81,7 @@ function SolvePage() {
 
   return (
     <div className={styles.ideLayout}>
-      <SolveSidebar />
+      <SolveSidebar currentProblemId={problemId} />
 
       <div className={styles.problemContainer}>
         {loading ? (
