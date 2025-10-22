@@ -11,6 +11,7 @@ function ResultPanel({
   submitResult = {},
   activeTab = 'test',
   onGoAiReview,
+  onOpenTestCaseModal = () => { }
 }) {
   const [tab, setTab] = useState('test');
 
@@ -44,7 +45,7 @@ function ResultPanel({
           </button>
         </div>
         <div className={styles.testcaseBtn}>
-          <Button>테스트케이스 추가</Button>
+          <Button onClick={onOpenTestCaseModal}>테스트케이스 추가</Button>
         </div>
       </div>
 

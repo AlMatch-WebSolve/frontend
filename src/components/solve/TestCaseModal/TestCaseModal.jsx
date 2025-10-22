@@ -186,7 +186,7 @@ function TestcaseModal({ onClose, solutionId }) {
             onClick={handleSave}
             disabled={isSaving}
           >
-            {isSaving ? '저장 중...' : '저장'}
+            저장
           </button>
         </div>
       </div>
