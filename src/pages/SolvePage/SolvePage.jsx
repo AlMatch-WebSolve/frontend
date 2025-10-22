@@ -7,6 +7,7 @@ import ProblemPanel from '../../components/problems/ProblemPanel/ProblemPanel';
 import ConfirmModal from '../../components/common/ConfirmModal/ConfirmModal';
 import styles from './SolvePage.module.css';
 import apiClient from '../../api/apiClient';
+import TestCaseModal from '../../components/solve/TestCaseModal/TestCaseModal';
 
 function SolvePage() {
   const { solutionId } = useParams();
@@ -23,8 +24,11 @@ function SolvePage() {
   const [solution, setSolution] = useState(null);
 
   const problemId = useMemo(
-    () => (solution?.problemInfo?.id != null ? Number(solution.problemInfo.id) : null),
-    [solution]
+    () =>
+      solution?.problemInfo?.id != null
+        ? Number(solution.problemInfo.id)
+        : null,
+    [solution],
   );
 
   useEffect(() => {
@@ -50,7 +54,11 @@ function SolvePage() {
       } catch (e) {
         if (!alive) return;
         const status = e?.response?.status;
-        setErr(status === 404 ? '솔루션을 찾을 수 없습니다. (404)' : '솔루션 조회 실패');
+        setErr(
+          status === 404
+            ? '솔루션을 찾을 수 없습니다. (404)'
+            : '솔루션 조회 실패',
+        );
       } finally {
         if (alive) setLoading(false);
       }
@@ -66,6 +74,10 @@ function SolvePage() {
     setSubmitResult({ url });
     setResultActiveTab('submit');
   };
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openTestCaseModal = () => setIsModalOpen(true);
+  const closeTestCaseModal = () => setIsModalOpen(false);
 
   return (
     <div className={styles.ideLayout}>
@@ -105,6 +117,20 @@ function SolvePage() {
             onGoAiReview={() => setCodingTab('review')}
           />
         ) : null}
+        <button
+          onClick={openTestCaseModal}
+          style={{ margin: '10px', padding: '5px 10px', width: '150px' }}
+        >
+          테스트케이스 모달 열기 (임시)
+        </button>
+        <CodingPanel onTabChange={setCodingTab} />
+        {codingTab === 'code' ? <ResultPanel /> : null}
+
+        {isModalOpen && (
+          <>
+            <TestCaseModal onClose={closeTestCaseModal} />
+          </>
+        )}
       </div>
 
       <ConfirmModal
