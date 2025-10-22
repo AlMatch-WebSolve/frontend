@@ -14,7 +14,7 @@ const Router = () => {
 
         <Route element={<MainLayout />}>
           <Route path='/workspace' element={<WorkspacePage />} />
-          <Route path='/solve/:problemId' element={<SolvePage />} />
+          <Route path='/solve/:solutionId' element={<SolvePage />} />
         </Route>
       </Routes>
     </BrowserRouter>

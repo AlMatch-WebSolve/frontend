@@ -1,0 +1,50 @@
+.submit-container {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+}
+
+.review-inner, .submit-inner {
+  font-size: 18px;
+}
+
+.review-inner {
+  margin-bottom: 20px;
+}
+
+.review-title, .submit-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.review-desc, .submit-desc {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.review-btn {
+  width: 243px;
+  height: 58px;
+  border: 1px solid #000000;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #F2F9FF;
+  font-family: var(--font-family-main);
+}
+
+.submit-btn {
+  width: 243px;
+  height: 58px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #3B465E;
+  color: #FFFFFF;
+  font-family: var(--font-family-main);
+}
+
+.review-label, .submit-label {
+  font-size: 24px;
+  font-weight: 500;
+}

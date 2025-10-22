@@ -1,0 +1,67 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  z-index: 1000;
+}
+
+.modal {
+  width: 400px;
+  height: 210px;
+  font-size: 18px;
+  background: #fff;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  padding: 60px 0 30px;
+  border: 1px solid #000000;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.text-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.footer {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.cancel-btn,
+.confirm-btn {
+  width: 123px;
+  height: 40px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.cancel-btn {
+  background: #fff;
+  color: #4397F3;
+  border: 1px solid #4397F3;
+}
+
+.confirm-btn {
+  background: #4397F3;
+  color: #fff;
+  border: none;
+}

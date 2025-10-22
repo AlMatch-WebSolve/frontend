@@ -1,0 +1,277 @@
+/* 기본 컨테이너 */
+.sidebar-container {
+  width: 50px; /* 항상 50px 너비 고정 */
+  height: calc(100vh - 60px);
+  position: relative; /* '내부 래퍼'가 이 div를 기준으로 absolute 배치됨 */
+  flex-shrink: 0; /* Flex 레이아웃에서 줄어들지 않도록 */
+}
+
+/* 실제 콘텐츠를 담는 '내부 래퍼' */
+.sidebar-inner-wrapper {
+  /* .sidebar-container 기준으로 절대 위치 */
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%; /* 부모 높이(calc(100vh - 60px))를 따름 */
+  z-index: 1000; /* 다른 콘텐츠 위에 떠야 함 */
+
+  /* --- 기존 .sidebar-container의 스타일 속성들 이동 --- */
+  border-right: 1px solid #000000;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease-in-out;
+  overflow: hidden; /* .expanded에서 내용이 삐져나가지 않게 */
+  white-space: nowrap;
+}
+
+/* 확장 상태 - 위로 떠서 다른 콘텐츠 덮기 */
+.expanded {
+  width: 300px;
+}
+
+/* 축소 상태 */
+.collapsed {
+  width: 50px;
+}
+
+/* 1. 헤더 */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  height: 50px;
+  border-bottom: 1px solid #000000;
+  font-weight: regular;
+  font-size: 18px;
+  flex-shrink: 0; /* 헤더는 줄어들지 않도록 */
+}
+
+.my-file-container {
+  gap: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.expanded .sidebar-header {
+  padding: 10px 10px 10px 20px;
+  justify-content: space-between;
+}
+
+.collapsed .sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 헤더의 접기 버튼 */
+.collapse-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  line-height: 1;
+}
+
+.button-container {
+  height: 46px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 10px 10px 20px;
+  flex-shrink: 0;
+  border-bottom: 0.2px solid #666666;
+  margin-bottom: 10px;
+}
+
+/* 2. "문제 추가" 버튼 */
+.add-problem-button {
+  width: 95px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  background-color: #3b465e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: regular;
+  flex-shrink: 0;
+  padding-right: 5px;
+  font-family: var(--font-family-main);
+}
+
+.icon-button-wrapper {
+  display: flex;
+  gap: 10px; /* 아이콘 버튼 사이 간격 */
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.icon-button img {
+  display: block; /* 이미지 하단 여백 제거 */
+}
+
+.file-list-container-wrapper {
+  flex: 1;
+  overflow: hidden; /* 이 래퍼가 스크롤을 직접 하지 않음 */
+  display: flex;
+  flex-direction: column;
+}
+
+/* 3. 파일 목록 (스크롤 영역) */
+.file-list-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+  padding-bottom: 50px;
+  box-sizing: border-box;
+}
+
+.file-list-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* 중첩된 파일 목록 ul */
+.nested-list {
+  list-style-type: none;
+  padding-left: 30px;
+  margin: 0;
+}
+
+/* 아이콘과 텍스트 래퍼 */
+.item-name-wrapper {
+  display: flex;
+  align-items: center;
+  flex-shrink: 1;
+  overflow: hidden;
+  margin-bottom: 10px;
+  justify-content: space-between;
+  padding: 0 15px 0px 20px;
+  position: relative;
+}
+
+.item-name-wrapper span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.context-menu {
+  position: fixed;
+  background-color: #3b465e; /* 예시 색상 (어두운 네이비) */
+  border: 1px solid #999999; /* 예시 색상 */
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  width: auto; /* 고정 너비 */
+  overflow: hidden; /* border-radius 적용용 */
+}
+
+.context-menu button {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid #4a5568; /* 구분선 */
+  color: white;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.context-menu button:last-child {
+  border-bottom: none; /* 마지막 버튼은 구분선 없음 */
+}
+
+.context-menu button:hover {
+  background-color: #4a5568; /* 호버 색상 */
+}
+
+/* 파일 트리 - 폴더 아이템 */
+.folder-item {
+  display: flex;
+  align-items: center;
+  font-weight: regular;
+  cursor: pointer;
+  gap: 20px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* 폴더명 스타일 */
+.folder-item .item-name-wrapper {
+  color: #007bff; /* 파란색 */
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* 파일 트리 - 파일 아이템 */
+.file-item {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 16px;
+  gap: 20px;
+  margin-bottom: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.rename-input {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  padding: 0px 3px;
+  border: 1px solid #4397f3;
+  border-radius: 5px;
+  background-color: #f4f4f4;
+  width: 100%;
+  box-sizing: border-box;
+  margin-right: 30px;
+}
+
+.rename-input:focus {
+  outline: none;
+  background-color: #ffffff;
+}
+
+/* 파일/폴더 아이템 메뉴 (...) 버튼 */
+.menu-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  visibility: visible; /* 수정: 항상 보이도록 */
+  opacity: 0.5;
+  margin-left: 8px; /* 이름이 길 때를 대비한 최소 마진 */
+  padding-right: 5px;
+}
+
+.folder-item:hover .menu-button,
+.file-item:hover .menu-button {
+  visibility: visible;
+  opacity: 1; /* 호버 시 더 진하게 */
+}
+
+.menu-button:hover {
+  opacity: 1;
+}
+
+.divider {
+  height: 0.2px;
+  background-color: #666666;
+  margin: 10px 0;
+}
