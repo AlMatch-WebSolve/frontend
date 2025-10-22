@@ -1,0 +1,181 @@
+/* 모달 뒷배경 (어둡게) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* 모달 본체 */
+.modal-container {
+  width: 900px;
+  height: 560px;
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  margin: 20px;
+  box-sizing: border-box;
+  max-height: 85vh;
+}
+
+/* 모달 헤더 */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  height: 60px;
+  border-bottom: 1px solid #000000;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: regular;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+/* 모달 바디 */
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 50px;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.modal-body::-webkit-scrollbar {
+  display: none;
+}
+
+/* 테스트케이스 아이템 */
+.testcase-item {
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+}
+.item-title {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+/* 입력/출력 영역 */
+.io-container {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* vertical divider */
+.io-divider {
+  height: 0.5px;
+  background-color: #000000;
+}
+
+/* 입력/출력 그룹 */
+.io-group {
+  width: 380px;
+  display: flex;
+  flex-direction: column;
+}
+
+.io-label {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.io-textarea {
+  width: 380px;
+  height: 80px;
+  border: 1px solid #666666;
+  background-color: #f2f9ff;
+  padding: 10px;
+  resize: none;
+}
+
+/* + - 버튼 */
+.item-buttons {
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+  justify-content: flex-end;
+}
+
+/* 아이콘 버튼 */
+.icon-button {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  border: 1px solid #666666;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.icon-button img {
+  width: 18px;
+  height: 18px;
+  color: #666666;
+}
+
+.icon-button:hover {
+  background-color: #f2f9ff;
+}
+
+/* 모달 푸터 */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-right: 50px;
+  padding-bottom: 20px;
+}
+
+/* 버튼 */
+.button {
+  height: 30px;
+  padding: 4px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: none;
+}
+
+.ai-button {
+  font-size: 16px;
+  color: #4397f3;
+  background-color: #f2f9ff;
+  border: 1px solid #4397f3;
+
+  display: flex;
+  align-items: center;
+  padding: 3px 5px;
+}
+
+.ai-button img {
+  width: 24px;
+  height: 24px;
+}
+
+.save-button {
+  width: 58px;
+  font-size: 16px;
+  color: white;
+  background-color: #4397f3;
+}
