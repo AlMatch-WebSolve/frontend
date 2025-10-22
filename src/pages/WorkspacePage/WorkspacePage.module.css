@@ -4,22 +4,26 @@
   background-color: #f2f9ff;
   padding-bottom: 150px;
 }
+
 .workSpaceContainer {
   max-width: 1600px;
   margin: 0 auto;
   padding-top: 80px;
   /* overflow: auto; */
 }
+
 .workSpaceButtonsHeaderContainer {
   display: flex;
   justify-content: space-between;
   padding-left: 20px;
   padding-right: 20px;
 }
+
 .workSpaceButtons {
   display: flex;
   gap: 20px;
 }
+
 .workSpaceButtonsRecent {
   height: 34px;
   font-size: 24px;
@@ -30,6 +34,7 @@
   align-items: center;
   margin-bottom: 10px;
 }
+
 .workSpaceButtonsNewfolder,
 .workSpaceButtonsNewproblem {
   height: 34px;
@@ -38,6 +43,7 @@
   border: none;
   cursor: pointer;
 }
+
 .workSpaceButtonsUnderline {
   width: 1600px;
   border: none;
@@ -54,6 +60,7 @@
   align-items: center;
   margin-top: 40px;
 }
+
 .workSpaceBoxContext {
   color: #000;
   font-size: 32px;
@@ -100,9 +107,11 @@
 
 .indented {
   width: 100%;
-  display: flex;
-  align-items: center;
-  padding-left: calc(var(--depth, 0) * 20px); /* ← 내용만 들여쓰기 */
+  padding-left: calc(var(--depth, 0) * 30px); /* ← 내용만 들여쓰기 */
   box-sizing: border-box; /* 패딩 포함 계산 */
   transition: padding-left 0.15s ease;
+}
+
+.indented.indentedFile {
+  padding-left: calc(var(--depth, 0) * 30px + 40px);
 }
