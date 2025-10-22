@@ -11,9 +11,10 @@ function TestcaseModal({ onClose, solutionId }) {
   const [testcases, setTestcases] = useState([
     { id: 1, input: '', output: '', name: '테스트 1' },
   ]);
-  const [isSaving, setIsSaving] = useState(false);
   const bodyRef = useRef(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAiLoading, setIsAiLoading] = useState(false);
 
   const normalize = (s = '') => s.replace(/\r\n?/g, '\n').replace(/(?:[^\n])$/, '$&\n');
   const displayNormalize = (s = '') => s.replace(/\r\n?/g, '\n').replace(/\n$/, '');
@@ -26,6 +27,18 @@ function TestcaseModal({ onClose, solutionId }) {
       });
     }
   }, [testcases]);
+
+  // ESC로 닫히지 않도록(생성 중에는 완전 차단)
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (isAiLoading && (e.key === 'Escape' || e.keyCode === 27)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown, true);
+    return () => document.removeEventListener('keydown', onKeyDown, true);
+  }, [isAiLoading]);
 
   useEffect(() => {
     if (!solutionId) return;
@@ -79,16 +92,32 @@ function TestcaseModal({ onClose, solutionId }) {
     ]);
   };
 
-  // AI 테스트케이스 추가
-  const addAiTestcase = () => {
-    const aiCount = testcases.filter((tc) =>
-      tc.name.startsWith('AI 테스트'),
-    ).length;
-    const newId = testcases.length + 1;
-    setTestcases([
-      ...testcases,
-      { id: newId, input: '', output: '', name: `AI 테스트 ${aiCount + 1}` },
-    ]);
+  // AI 테스트케이스 생성
+  const handleGenerateAi = async () => {
+    if (!solutionId || isAiLoading) return; // 디바운스: 응답 올 때까지 재클릭 방지
+    setIsAiLoading(true);
+    try {
+      const { data } = await apiClient.post('/api/ai/testcases', {
+        solutionId: Number(solutionId),
+        count: 1,
+      });
+      // data 예시: [{ input, output, description }]
+      const aiCount = testcases.filter(tc => tc.name.startsWith('AI 테스트')).length;
+      const baseLen = testcases.length;
+      const appended = (Array.isArray(data) ? data : []).map((tc, idx) => ({
+        id: baseLen + idx + 1,
+        input: displayNormalize(tc?.input ?? ''),
+        output: displayNormalize(tc?.output ?? ''),
+        name: `AI 테스트 ${aiCount + idx + 1}`,
+      }));
+      setTestcases(prev => [...prev, ...appended]);
+    } catch (err) {
+      const status = err?.response?.status;
+      console.error('[AI TC CREATE] 실패:', status, err?.response?.data);
+      alert('AI 테스트케이스 생성 중 오류가 발생했습니다.');
+    } finally {
+      setIsAiLoading(false);
+    }
   };
 
   // 테스트케이스 삭제 (1개 남으면 삭제 안됨)
@@ -160,15 +189,21 @@ function TestcaseModal({ onClose, solutionId }) {
     }
   };
 
+  // 닫기 가드: AI 생성 중에는 닫히지 않도록
+  const handleRequestClose = () => {
+    if (isAiLoading) return;
+    onClose?.();
+  };
+
   return (
-    <div className={styles.modalOverlay} onClick={onClose}>
+    <div className={styles.modalOverlay} onClick={handleRequestClose}>
       <div
         className={styles.modalContainer}
         onClick={(e) => e.stopPropagation()}
       >
         <div className={styles.modalHeader}>
           <p className={styles.modalTitle}>테스트케이스 추가</p>
-          <button className={styles.closeButton} onClick={onClose}>
+          <button className={styles.closeButton} onClick={handleRequestClose}>
             <img src={CloseIcon} alt='닫기' />
           </button>
         </div>
@@ -204,12 +239,13 @@ function TestcaseModal({ onClose, solutionId }) {
               <div className={styles.ioDivider}></div>
 
               <div className={styles.itemButtons}>
-                <button className={styles.iconButton} onClick={addTestcase}>
+                <button className={styles.iconButton} onClick={addTestcase} disabled={isAiLoading || isSaving || isLoading}>
                   <img src={PlusIcon} alt='추가' />
                 </button>
                 <button
                   className={styles.iconButton}
                   onClick={() => removeTestcase(tc.id)}
+                  disabled={isAiLoading || isSaving || isLoading}
                 >
                   <img src={MinusIcon} alt='삭제' />
                 </button>
@@ -221,18 +257,29 @@ function TestcaseModal({ onClose, solutionId }) {
         <div className={styles.modalFooter}>
           <button
             className={`${styles.button} ${styles.aiButton}`}
-            onClick={addAiTestcase}
+            onClick={handleGenerateAi}
+            disabled={isAiLoading || isSaving || isLoading}
           >
-            <img src={AiPlusIcon} alt='추가'></img> <p>AI 테스트케이스 추가</p>
+            <img src={AiPlusIcon} alt='추가' /> <p>AI 테스트케이스 추가</p>
           </button>
           <button
             className={`${styles.button} ${styles.saveButton}`}
             onClick={handleSave}
-            disabled={isSaving}
+            disabled={isSaving || isAiLoading}
           >
             저장
           </button>
         </div>
+
+        {/* AI 생성 중 차단 오버레이 */}
+        {isAiLoading && (
+          <div className={styles.blockingBackdrop} role="dialog" aria-modal="true" aria-labelledby="ai-blocking-title">
+            <div className={styles.blockingBox}>
+              <div id="ai-blocking-title" className={styles.blockingTitle}>테스트케이스 생성 중…</div>
+              <div className={styles.blockingSpinner} aria-hidden="true" />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
