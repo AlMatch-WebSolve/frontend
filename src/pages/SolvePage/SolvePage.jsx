@@ -23,6 +23,10 @@ function SolvePage() {
   const [err, setErr] = useState(null);
   const [solution, setSolution] = useState(null);
 
+  const [ran, setRan] = useState(false);
+  const [tests, setTests] = useState([]);
+  const [testing, setTesting] = useState(false);
+
   const problemId = useMemo(
     () =>
       solution?.problemInfo?.id != null
@@ -69,13 +73,55 @@ function SolvePage() {
     };
   }, [numericSolutionId]);
 
+  const handleRunTests = async (code, lang, solId) => {
+    if (!solId) solId = numericSolutionId;
+    setTesting(true);
+    try {
+      const normalized = (code ?? '').replace(/\r\n?/g, '\n');
+      const language = lang || 'java';
+
+      const { data } = await apiClient.post('/api/execute/test/solution', {
+        solutionId: solId,
+        code: normalized,
+        language,
+      });
+
+      const mapped = (data?.results ?? []).map((r, i) => ({
+        id: r.testCaseId ?? i,
+        type: r.type ?? '',
+        input: r.input ?? '',
+        expected: r.expectedOutput ?? '',
+        output: r.actualOutput ?? '',
+        pass: !!r.isPassed,
+        error: r.error ?? null,
+        executionTime: r.executionTime ?? null,
+      }));
+
+      setTests(mapped);
+      setRan(true);
+      setResultActiveTab('test');
+    } catch (err) {
+      const status = err?.response?.status;
+      if (status === 400) {
+        alert('잘못된 요청(지원하지 않는 언어 등)입니다. (400)');
+      } else if (status === 404) {
+        alert('솔루션을 찾을 수 없습니다. (404)');
+      } else {
+        console.error('테스트 실행 실패:', err);
+        alert('테스트 실행에 실패했습니다.');
+      }
+    } finally {
+      setTesting(false);
+    }
+  };
+
   const handleAfterSubmit = ({ url }) => {
     setSubmitRan(true);
     setSubmitResult({ url });
     setResultActiveTab('submit');
   };
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const openTestCaseModal = () => setIsModalOpen(true);
   const closeTestCaseModal = () => setIsModalOpen(false);
 
@@ -108,9 +154,12 @@ function SolvePage() {
           onAfterSubmit={handleAfterSubmit}
           hasSubmitted={submitRan}
           onRequireSubmit={() => setShowSubmitFirst(true)}
+          onTest={(code, lang) => handleRunTests(code, lang, numericSolutionId)}
         />
         {codingTab === 'code' ? (
           <ResultPanel
+            ran={ran}
+            tests={tests}
             submitRan={submitRan}
             submitResult={submitResult}
             activeTab={resultActiveTab}
