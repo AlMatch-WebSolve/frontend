@@ -115,16 +115,9 @@ function SolvePage() {
             submitResult={submitResult}
             activeTab={resultActiveTab}
             onGoAiReview={() => setCodingTab('review')}
+            onOpenTestCaseModal={openTestCaseModal}
           />
         ) : null}
-        <button
-          onClick={openTestCaseModal}
-          style={{ margin: '10px', padding: '5px 10px', width: '150px' }}
-        >
-          테스트케이스 모달 열기 (임시)
-        </button>
-        <CodingPanel onTabChange={setCodingTab} />
-        {codingTab === 'code' ? <ResultPanel /> : null}
 
         {isModalOpen && (
           <>
