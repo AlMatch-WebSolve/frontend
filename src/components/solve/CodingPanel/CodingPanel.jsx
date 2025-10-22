@@ -24,6 +24,7 @@ function CodingPanel({
   language,
   onTabChange,
   onSolutionLoaded,
+  onTest,
   hasSubmitted = false,
   onAfterSubmit
 }) {
@@ -181,6 +182,11 @@ function CodingPanel({
   const closeSaveModal = () => setShowSaveModal(false);
   const afterSaveModalAutoClose = () => setShowSaveModal(false);
 
+  // 테스트
+  const handleTest = async () => {
+    if (onTest) return onTest(code, editorLanguage, solutionId);
+  };
+
   // 제출
   const normalizeCode = (s = '') => s.replace(/\r\n?/g, '\n');
   const copyToClipboard = async (text) => navigator.clipboard?.writeText?.(text);
@@ -258,7 +264,7 @@ function CodingPanel({
             <Button onClick={handleSaveClick} disabled={saving || !solutionId || loading}>
               저장
             </Button>
-            <Button>테스트</Button>
+            <Button onClick={handleTest}>테스트</Button>
             <Button onClick={handleJudge} className={styles.submitBtn}>
               제출
               <img src={SubmitIcon} alt="제출" />
