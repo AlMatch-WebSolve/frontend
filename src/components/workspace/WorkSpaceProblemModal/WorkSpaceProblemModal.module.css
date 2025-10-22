@@ -7,9 +7,9 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center; 
-  justify-content: center; 
-  z-index: 1000; 
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
 }
 
 /* 모달 내용 컨테이너 */
@@ -17,9 +17,9 @@
   background-color: #ffffff;
   border: 1px solid #000000;
   width: 900px;
-  height: 600px; 
-  display: flex; 
-  flex-direction: column; 
+  height: 600px;
+  display: flex;
+  flex-direction: column;
   border-radius: 5px;
 }
 
@@ -100,7 +100,7 @@
 .problem-table td {
   font-size: 16px;
   padding: 8px 20px;
-  height: 44px; 
+  height: 44px;
   box-sizing: border-box;
 }
 
@@ -181,4 +181,10 @@
   padding: 5px;
   border-radius: 5px;
   align-items: center;
+}
+
+/* 남는 칸 */
+.emptyRow {
+  height: 45px;
+  background-color: transparent;
 }

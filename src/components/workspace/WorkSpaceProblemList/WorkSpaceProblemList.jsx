@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import styles from './WorkSpaceProblemList.module.css';
 import FileCodeIcon from '../../../assets/icons/FileIcon.svg';
 import DotsIcon from '../../../assets/icons/DotsIcon.svg';
-import apiClient from '../../../api/apiClient.js';
 
 // 언어별 확장자 매핑
 const languageExtensions = {
@@ -11,33 +10,26 @@ const languageExtensions = {
   python: '.py',
 };
 
-// 숫자가 아니면 임시/로컬로 간주해 서버 호출을 막습니다.
-const isServerSolutionId = (val) => /^\d+$/.test(String(val ?? '').trim());
-
 const WorkSpaceProblemList = ({
   id,
-  solutionId,
+  solutionId,            // 서버 솔루션 ID (없으면 임시 파일)
   initialTitle,
-  onFileNameConfirm, // 부모에 최종 이름 전달
+  onFileNameConfirm,      // 부모에 최종 이름만 전달 (서버 요청은 부모가 담당)
   top,
   left,
   selectedLanguage,
-  onDelete, // 부모에 삭제 반영 요청
+  onDelete,               // 부모에 삭제 요청 이벤트만 전달 (서버 요청은 부모가 담당)
   isInitialEditing = false,
-  onDoubleClick,
+  onDoubleClick,          // 열기
 }) => {
   const [fileName, setFileName] = useState(initialTitle || '');
   const [isEditing, setIsEditing] = useState(isInitialEditing);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [busy, setBusy] = useState(false); // PATCH/DELETE 진행 중
 
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
 
-  const handleOpen = (e) => {
-    if (busy || isEditing) return;
-    onDoubleClick?.(e);
-  };
+  useEffect(() => { setFileName(initialTitle || ''); }, [initialTitle]);
 
   // 편집 시작 시 자동 포커스
   useEffect(() => {
@@ -58,8 +50,13 @@ const WorkSpaceProblemList = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 파일명 확정(Enter)
-  const handleKeyDown = async (e) => {
+  const handleOpen = (e) => {
+    if (isEditing) return;
+    onDoubleClick?.(e);
+  };
+
+  // 이름 변경 확정(Enter) - 확장자 부착 → 부모 콜백만 호출
+  const handleKeyDown = (e) => {
     if (e.key !== 'Enter') {
       if (e.key === 'Escape') {
         setIsEditing(false);
@@ -74,7 +71,7 @@ const WorkSpaceProblemList = ({
       return;
     }
 
-    // 선택된 언어 확장자 자동 부착
+    // Enter 시에만 확장자 자동 부착
     if (selectedLanguage && languageExtensions[selectedLanguage]) {
       const ext = languageExtensions[selectedLanguage];
       if (!finalFileName.endsWith(ext)) {
@@ -84,32 +81,7 @@ const WorkSpaceProblemList = ({
     }
 
     setIsEditing(false);
-
-    // 서버 id가 아니면(=임시/로컬 id) 서버 호출 없이 부모만 업데이트
-    if (!isServerSolutionId(solutionId)) {
-      onFileNameConfirm?.(finalFileName);
-      return;
-    }
-
-    // 서버 PATCH
-    const prev = fileName;
-    setBusy(true);
-    try {
-      // 낙관적 반영
-      setFileName(finalFileName);
-
-      const res = await apiClient.patch(`/api/solutions/${String(solutionId).trim()}`, { name: finalFileName });
-      if (res.status !== 200) throw new Error(`파일 이름 변경 실패 (status: ${res.status})`);
-
-      onFileNameConfirm?.(finalFileName);
-    } catch (err) {
-      // 롤백
-      console.error('Rename solution error:', err?.response?.data || err);
-      setFileName(prev);
-      alert(err?.response?.data?.message || err?.message || '파일 이름 수정에 실패했습니다.');
-    } finally {
-      setBusy(false);
-    }
+    onFileNameConfirm?.(finalFileName); // 실제 PATCH/POST는 부모가 수행
   };
 
   const toggleDropdown = () => setShowDropdown((p) => !p);
@@ -119,26 +91,12 @@ const WorkSpaceProblemList = ({
     setShowDropdown(false);
   };
 
-  // 삭제
-  const handleDeleteClick = async () => {
+  // 삭제 클릭 → Confirm → 부모 콜백만 호출
+  const handleDeleteClick = () => {
     setShowDropdown(false);
-
-    if (!isServerSolutionId(solutionId)) {
-      onDelete?.();
-      return;
-    }
-
-    setBusy(true);
-    try {
-      const res = await apiClient.delete(`/api/solutions/${String(solutionId).trim()}`);
-      if (res.status !== 200) throw new Error(`파일 삭제 실패 (status: ${res.status})`);
-      onDelete?.();
-    } catch (err) {
-      console.error('Delete solution error:', err?.response?.data || err);
-      alert(err?.response?.data?.message || err?.message || '파일 삭제에 실패했습니다.');
-    } finally {
-      setBusy(false);
-    }
+    const ok = window.confirm('파일을 삭제하시겠습니까?');
+    if (!ok) return;
+    onDelete?.(); // 실제 DELETE 및 롤백은 부모가 담당
   };
 
   return (
@@ -160,7 +118,6 @@ const WorkSpaceProblemList = ({
           onKeyDown={handleKeyDown}
           placeholder="파일명 입력 후 Enter"
           aria-label="파일명 입력"
-          disabled={busy}
         />
       ) : (
         <div
@@ -183,7 +140,6 @@ const WorkSpaceProblemList = ({
               aria-haspopup="menu"
               aria-expanded={showDropdown}
               aria-label="파일 메뉴 열기"
-              disabled={busy}
             >
               <img src={DotsIcon} alt="더보기" className={styles.dotsIcon} />
             </button>
@@ -194,7 +150,6 @@ const WorkSpaceProblemList = ({
                   role="menuitem"
                   onClick={handleEdit}
                   className={styles.dropdownItem}
-                  disabled={busy}
                 >
                   이름 수정
                 </button>
@@ -202,7 +157,6 @@ const WorkSpaceProblemList = ({
                   role="menuitem"
                   onClick={handleDeleteClick}
                   className={styles.dropdownItem}
-                  disabled={busy}
                 >
                   파일 삭제
                 </button>

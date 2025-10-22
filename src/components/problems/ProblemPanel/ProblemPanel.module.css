@@ -24,6 +24,7 @@
   background: #3B465E;
   color: #FFFFFF;
   letter-spacing: 0.1em;
+  font-family: var(--font-family-main);
 }
 
 .content {

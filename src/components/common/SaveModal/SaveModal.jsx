@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import CloseIcon from '../../../assets/icons/CloseIcon.svg';
 import styles from './SaveModal.module.css';
 
-function SaveModal({ open, message = '코드가 저장되었습니다.', duration = 1000, onClose, onAfterAutoClose }) {
+function SaveModal({ open, message, duration, onClose, onAfterAutoClose }) {
   useEffect(() => {
     if (!open) return;
     const t = setTimeout(() => {

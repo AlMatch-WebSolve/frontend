@@ -5,12 +5,13 @@ function Button({ children, onClick, type = "button", style, className }) {
     display: 'flex',
     fontSize: 20,
     fontWeight: 400,
-    padding: '2px 10px',
+    padding: '5px 10px',
     background: '#4397F3',
     color: '#FFFFFF',
     borderRadius: 5,
     border: 'none',
     cursor: 'pointer',
+    fontFamily: 'var(--font-family-main)',
   };
 
   return (

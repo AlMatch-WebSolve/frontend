@@ -129,6 +129,16 @@ export default function SettingsModalLocal({
     };
   }, [open, initialTheme, initialLanguage]);
 
+  // 다른 UI(문제 모달 등)에서 바뀐 언어를 즉시 반영
+  useEffect(() => {
+    const handler = (e) => {
+      const next = ensureValidUiLanguage(e?.detail?.uiLanguage);
+      setLanguage(next);
+    };
+    window.addEventListener('settings:languageChanged', handler);
+    return () => window.removeEventListener('settings:languageChanged', handler);
+  }, []);
+
   if (!open) return null;
 
   // 저장 흐름 - 버튼 클릭 시 ConfirmModal만 연다
@@ -141,6 +151,7 @@ export default function SettingsModalLocal({
   const handleConfirmSave = async () => {
     setSaving(true);
     try {
+      const uiLangNormalized = ensureValidUiLanguage(language);
       const payload = {
         theme: UI_THEME_TO_SERVER[theme] ?? String(theme).trim().toUpperCase(), // LIGHT / DARK
         language:
@@ -153,6 +164,12 @@ export default function SettingsModalLocal({
 
       if (res.status === 200) {
         onSave?.(payload);
+        // 저장 성공 → 전체 UI 동기화 브로드캐스트 (문제 모달이 즉시 반영)
+        try {
+          window.dispatchEvent(new CustomEvent('settings:languageChanged', {
+            detail: { uiLanguage: uiLangNormalized }, // 'Java' | 'JavaScript' | 'Python'
+          }));
+        } catch { }
         setConfirmOpen(false);
         onClose?.();
       } else {

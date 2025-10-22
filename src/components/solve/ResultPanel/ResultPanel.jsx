@@ -10,6 +10,7 @@ function ResultPanel({
   submitRan = false,
   submitResult = {},
   activeTab = 'test',
+  onGoAiReview,
 }) {
   const [tab, setTab] = useState('test');
 
@@ -54,7 +55,11 @@ function ResultPanel({
           </section>
         ) : (
           <section role="tabpanel" aria-labelledby="tab-submit" id="panel-submit" className={styles.fill}>
-            <SubmissionResult ran={submitRan} url={submitResult?.url} />
+            <SubmissionResult
+              ran={submitRan}
+              url={submitResult?.url}
+              onGoAiReview={onGoAiReview}
+            />
           </section>
         )}
       </div>
