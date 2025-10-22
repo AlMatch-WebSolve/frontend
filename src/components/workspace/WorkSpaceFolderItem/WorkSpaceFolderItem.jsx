@@ -171,7 +171,7 @@ const WorkSpaceFolderItem = ({
                   role='menuitem'
                   disabled={isPending}
                 >
-                  이름 수정
+                  이름 변경
                 </button>
                 <button
                   onClick={(e) => {

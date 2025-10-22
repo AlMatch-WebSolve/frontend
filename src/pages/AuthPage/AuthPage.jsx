@@ -32,16 +32,21 @@ function AuthPage() {
           <div className={styles.divider} />
           <div className={styles.toggleLink}>
             {isLoginView ? (
-              <span>
-                아직 계정이 없나요?{' '}
-                <button
-                  type='button'
-                  onClick={toggleView}
-                  className={styles.toggleButton}
-                >
-                  회원가입
-                </button>
-              </span>
+              <>
+                <div className={styles.linkGroup}>
+                  <button
+                    type='button'
+                    onClick={toggleView}
+                    className={styles.toggleButton}
+                  >
+                    회원가입
+                  </button>
+                  <div className={styles.verticalDivider} />
+                  <Link to='/forgot-password' className={styles.toggleButton}>
+                    비밀번호 찾기
+                  </Link>
+                </div>
+              </>
             ) : (
               <span>
                 이미 계정이 있나요?{' '}
