@@ -170,7 +170,7 @@ function SolvePage() {
 
         {isModalOpen && (
           <>
-            <TestCaseModal onClose={closeTestCaseModal} />
+            <TestCaseModal onClose={closeTestCaseModal} solutionId={numericSolutionId} />
           </>
         )}
       </div>

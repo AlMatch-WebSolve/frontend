@@ -249,7 +249,7 @@ const WorkSpaceProblemList = ({
                   onClick={handleEdit}
                   className={styles.dropdownItem}
                 >
-                  이름 수정
+                  이름 변경
                 </button>
                 <button
                   role="menuitem"
