@@ -1,7 +1,8 @@
 .workSpaceBackground {
   width: 100%;
-  height: calc(100vh - 60px);
-  background-color: #F2F9ff;
+  min-height: calc(100vh - 60px);
+  background-color: #f2f9ff;
+  padding-bottom: 150px;
 }
 .workSpaceContainer {
   max-width: 1600px;
@@ -15,14 +16,18 @@
   padding-left: 20px;
   padding-right: 20px;
 }
-.workSpaceButtons { display: flex; gap: 20px; }
+.workSpaceButtons {
+  display: flex;
+  gap: 20px;
+}
 .workSpaceButtonsRecent {
   height: 34px;
   font-size: 24px;
   color: #000;
   background: transparent;
   border: none;
-  display: flex; align-items: center;
+  display: flex;
+  align-items: center;
   margin-bottom: 10px;
 }
 .workSpaceButtonsNewfolder,
@@ -44,20 +49,25 @@
   width: 1600px;
   height: 400px;
   border: 2px dashed #666;
-  display: flex; justify-content: center; align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-top: 40px;
 }
-.workSpaceBoxContext { color: #000; font-size: 32px; }
+.workSpaceBoxContext {
+  color: #000;
+  font-size: 32px;
+}
 
 /* 리스트 */
 .folderList {
   position: relative;
   list-style: none;
-  padding: 0; margin: 0;
+  padding: 0;
+  margin: 0;
   width: 100%;
   /* overflow-y: auto; */
   /* max-height: 700px; */
-
 }
 /* .folderList::-webkit-scrollbar {
   display: none;
@@ -66,13 +76,13 @@
 /* 한 줄은 항상 전체폭 라인 (컨텐츠 폭과 무관) */
 .row {
   position: relative;
-  display: block;   /* block 보장 */
-  width: 100%;      /* 전체폭 보장 */
+  display: block; /* block 보장 */
+  width: 100%; /* 전체폭 보장 */
 }
 
 /* 전체 폭 border-bottom */
 .row::after {
-  content: "";
+  content: '';
   position: absolute;
   left: 0;
   right: 0;
@@ -94,6 +104,5 @@
   align-items: center;
   padding-left: calc(var(--depth, 0) * 20px); /* ← 내용만 들여쓰기 */
   box-sizing: border-box; /* 패딩 포함 계산 */
-  transition: padding-left .15s ease;
+  transition: padding-left 0.15s ease;
 }
-
