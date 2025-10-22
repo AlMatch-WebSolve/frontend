@@ -11,7 +11,6 @@ function ResetPasswordForm({ token }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
 
   const validateForm = () => {
     // 유효성 검사
@@ -36,7 +35,6 @@ function ResetPasswordForm({ token }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setSuccess(false);
 
     if (!validateForm()) {
       return;
@@ -51,15 +49,9 @@ function ResetPasswordForm({ token }) {
         newPassword: newPassword,
       });
 
-      setSuccess(true);
-      setNewPassword('');
-      setConfirmPassword('');
-
-      // 2초 후 로그인 페이지로 이동
-      setTimeout(() => {
-        alert('비밀번호가 성공적으로 변경되었습니다. 로그인 페이지로 이동합니다.');
-        navigate('/auth');
-      }, 2000);
+      // 응답 받은 후 Alert 띄우고 로그인 페이지로 이동
+      alert('비밀번호가 성공적으로 변경되었습니다. 로그인 페이지로 이동합니다.');
+      navigate('/auth');
     } catch (err) {
       setLoading(false);
 
@@ -97,11 +89,6 @@ function ResetPasswordForm({ token }) {
           <Link to='/' className={styles.errorGoHomeButton}>
             메인 페이지로 가기
           </Link>
-        </div>
-      )}
-      {success && (
-        <div className={styles.successMessage}>
-          비밀번호가 성공적으로 변경되었습니다!
         </div>
       )}
 
