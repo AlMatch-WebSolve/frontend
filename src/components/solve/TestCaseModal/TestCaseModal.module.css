@@ -106,6 +106,7 @@
   background-color: #f2f9ff;
   padding: 10px;
   resize: none;
+  font-family: 'Red Hat Mono', 'D2Coding', ui-monospace, SFMono-Regular, Menlo, Consolas,'Liberation Mono', monospace;
 }
 
 /* + - 버튼 */
