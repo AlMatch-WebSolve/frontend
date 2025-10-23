@@ -328,7 +328,7 @@ export default function SettingsModalLocal({
           <button
             className={styles.logout}
             type='button'
-            // onClick={askLogout}
+            onClick={askLogout}
             disabled={loading || saving}
           >
             로그아웃하기

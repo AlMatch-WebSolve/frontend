@@ -1,14 +1,91 @@
-.ide-layout {
+.ide-layout,
+.container {
   display: flex;
-}
-
-.info-box, .err-box {
-  width: 500px;
-}
-
-.solve-container {
   min-width: 0;
-  display: flex;
+  height: calc(100vh - 60px);
+}
+
+.solve-container,
+.right-panel {
   flex: 1 1 auto;
+  min-width: 600px;
+  display: flex;
   flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.info-box,
+.err-box {
+  width: 100%;
+  max-width: 500px;
+}
+
+.sidebar-wrap {
+  display: flex;
+}
+
+.left-panel {
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%; 
+  background: #fff;
+  border-right: 1px solid #000;
+}
+
+.problem-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.divider {
+  position: relative;
+  flex: 0 0 0;       
+  background: transparent;
+}
+
+.divider-hit {
+  position: absolute;
+  left: -5px;
+  top: 0;
+  bottom: 0;
+  width: 10px;    
+  cursor: col-resize;
+}
+
+.top-panel,
+.bottom-panel {
+  min-height: 0;
+  overflow: hidden;  
+  display: flex;
+  flex-direction: column;
+}
+
+.v-divider {
+  position: relative;
+  flex: 0 0 0;       
+  background: transparent;
+}
+
+.v-divider-hit {
+  position: absolute;
+  top: -5px;
+  left: 0;
+  right: 0;
+  height: 10px;     
+  cursor: row-resize;
+}
+
+.info-box {
+  padding: 20px;
+  color: #666666;
+}
+
+.error-box {
+  padding: 20px;
+  color: #666666;
 }
