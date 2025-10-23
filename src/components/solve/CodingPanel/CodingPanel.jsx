@@ -288,6 +288,7 @@ function CodingPanel({
               value={code}
               onChange={handleChange}
               onHotSave={handleHotSave}
+              fileName={fileName}
             />
           </section>
         ) : (

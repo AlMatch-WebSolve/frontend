@@ -9,7 +9,7 @@
   border-bottom: 1px solid #ddd;
 }
 
-.collapseButton {
+.collapse-button {
   background: none;
   border: none;
   padding: 0 -5px; /* 아이콘 좌우 여백 */
@@ -20,7 +20,7 @@
   color: #6b7280; /* 아이콘 색상 (회색 계열) */
 }
 
-.collapseIcon {
+.collapse-icon {
   width: 30px;
   height: 30px;
   display: block;
@@ -46,13 +46,12 @@
   align-items: center;
   justify-content: space-between; /* 이름은 왼쪽, 버튼은 오른쪽 */
   margin-left: 8px; /* 폴더 아이콘과 이름 사이 간격 */
-  overflow: hidden; /* 이름이 길 경우 필요 */
   gap: 8px; /* 이름과 더보기 버튼 사이 최소 간격 */
 }
 
 .folder-name-display {
   white-space: nowrap;
-  overflow: hidden;
+  overflow: hidden; /* 이름이 길 경우 필요 */
   text-overflow: ellipsis;
   /* 기존 이름 텍스트 스타일 */
   font-size: 16px; /* 예시 */
@@ -106,10 +105,10 @@
   background-color: #f3f4f6; /* 연한 회색 배경 */
 }
 
-.dots-button:disabled {
+/* .dots-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
+} */
 
 /* 점 세개 아이콘 크기 */
 .dots-icon {
@@ -146,5 +145,5 @@
 
 /* 드롭다운 메뉴 아이템 호버 효과 */
 .dropdown-item:hover {
-  background-color: #f5f5f5;
+  background-color: #4a5568;
 }
