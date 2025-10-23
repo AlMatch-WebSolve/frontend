@@ -1,10 +1,9 @@
 .panel {
-  width: 500px;
+  width: 100%;
   height: calc(100vh - 60px);
   display: flex;
   flex-direction: column;
   min-height: 0;
-  border-right: 1px solid #000000;
 }
 
 .panel-header {

@@ -6,7 +6,7 @@
 }
 
 .panel-fixed {
-  height: 524px;
+  height: 100%;
   flex: 0 0 auto;
 }
 
