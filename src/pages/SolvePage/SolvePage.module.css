@@ -2,6 +2,10 @@
   display: flex;
 }
 
+.info-box, .err-box {
+  width: 500px;
+}
+
 .solve-container {
   min-width: 0;
   display: flex;

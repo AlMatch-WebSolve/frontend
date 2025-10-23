@@ -22,7 +22,7 @@ function TestCaseResults({ ran = false, tests = [] }) {
               <span className={styles.value}>{t.input ?? ''}</span>
             </div>
 
-            <label className={styles.label}>실행 결과</label>
+            <label className={`${styles.label} ${styles.labelWidth}`}>실행 결과</label>
             <div
               className={`${styles.runResult} ${t.pass ? styles.pass : styles.fail
                 }`}
@@ -37,7 +37,7 @@ function TestCaseResults({ ran = false, tests = [] }) {
               <span className={styles.value}>{t.expected ?? ''}</span>
             </div>
 
-            <label className={styles.label}>출력값</label>
+            <label className={`${styles.label} ${styles.labelWidth}`}>출력값</label>
             <div className={styles.field}>
               <span className={styles.value}>{t.output ?? ''}</span>
             </div>
