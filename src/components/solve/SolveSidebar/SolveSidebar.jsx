@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import apiClient from '../../../api/apiClient';
 import styles from './SolveSidebar.module.css';
 import SidebarIcon from '../../../assets/icons/SidebarIcon.svg';
@@ -9,6 +9,8 @@ import AddFileIcon from '../../../assets/icons/AddFileIcon.svg';
 import FolderIcon from '../../../assets/icons/FolderIcon.svg';
 import FileIcon from '../../../assets/icons/FileIcon.svg';
 import MoreIcon from '../../../assets/icons/MoreIcon.svg';
+import ArrowRightIcon from '../../../assets/icons/ArrowRightIcon.svg';
+import ArrowDownIcon from '../../../assets/icons/ArrowDownIcon.svg';
 import WorkSpaceProblemModal from '../../../components/workspace/WorkSpaceProblemModal/WorkSpaceProblemModal';
 import { useNavigate } from 'react-router-dom';
 
@@ -85,6 +87,8 @@ const FileTreeItem = ({
   onSubmitRename,
   onCancelRename,
   onSubmitCreate,
+  collapsedFolders,
+  onToggleCollapse,
 }) => {
   const navigate = useNavigate();
 
@@ -112,6 +116,8 @@ const FileTreeItem = ({
   const [tempName, setTempName] = useState(currentBaseName);
   const inputRef = useRef(null);
   const isSubmitting = useRef(false);
+
+  const isCollapsed = collapsedFolders.has(item.id);
 
   const handleMenuButtonClick = (e) => {
     e.stopPropagation();
@@ -190,10 +196,24 @@ const FileTreeItem = ({
 
   // 1. 아이템이 'FOLDER'일 경우
   if (item.type === 'FOLDER') {
+    const handleToggleClick = (e) => {
+      e.stopPropagation(); // 상위 div의 클릭 이벤트 방지
+      onToggleCollapse(item.id);
+    };
+
     return (
       <li>
         <div className={styles.itemNameWrapper}>
           <div className={styles.folderItem}>
+            <button
+              onClick={handleToggleClick}
+              className={styles.collapseButton} // 새 CSS 클래스
+            >
+              <img
+                src={isCollapsed ? ArrowRightIcon : ArrowDownIcon}
+                alt={isCollapsed ? '펼치기' : '접기'}
+              />
+            </button>
             <img src={FolderIcon} alt='폴더' />
             {isEditing ? (
               <input
@@ -221,7 +241,7 @@ const FileTreeItem = ({
           )}
         </div>
         {/* 자식 렌더링 */}
-        {item.children && item.children.length > 0 && (
+        {item.children && item.children.length > 0 && !isCollapsed && (
           <ul className={styles.nestedList}>
             {/* [수정됨] key 경고 수정 및 props 재귀 전달 */}
             {item.children.map((child, index) => (
@@ -233,6 +253,8 @@ const FileTreeItem = ({
                 onSubmitRename={onSubmitRename}
                 onCancelRename={onCancelRename}
                 onSubmitCreate={onSubmitCreate}
+                collapsedFolders={collapsedFolders}
+                onToggleCollapse={onToggleCollapse}
               />
             ))}
           </ul>
@@ -247,6 +269,7 @@ const FileTreeItem = ({
       <li>
         <div className={styles.itemNameWrapper}>
           <div className={styles.fileItem} onDoubleClick={handleDoubleClick}>
+            <span className={styles.collapseIcon} />
             <img src={FileIcon} alt='파일' />
             {isEditing ? (
               <input
@@ -350,6 +373,7 @@ function SolveSidebar({ currentProblemId }) {
   const [openMenuItem, setOpenMenuItem] = useState(null);
   const [menuPosition, setMenuPosition] = useState(null);
   const [editingItemId, setEditingItemId] = useState(null);
+  const [collapsedFolders, setCollapsedFolders] = useState(new Set());
 
   // 파일 생성 시 부모 폴더 ID 임시 저장
   const [createFileParentId, setCreateFileParentId] = useState(null);
@@ -359,6 +383,18 @@ function SolveSidebar({ currentProblemId }) {
   const toggleSidebar = () => {
     setIsExpanded(!isExpanded);
   };
+
+  const toggleFolderCollapse = useCallback((folderId) => {
+    setCollapsedFolders((prev) => {
+      const next = new Set(prev);
+      if (next.has(folderId)) {
+        next.delete(folderId); // 펼치기
+      } else {
+        next.add(folderId); // 접기
+      }
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     const fetchUserPreferences = async () => {
@@ -728,7 +764,6 @@ function SolveSidebar({ currentProblemId }) {
 
     return (
       <ul ref={scrollContainerRef} className={styles.fileListContainer}>
-        {/* [수정됨] key 경고 수정 */}
         {fileTree.map((rootItem, index) => (
           <React.Fragment key={rootItem.id || `root-${index}`}>
             <FileTreeItem
@@ -738,6 +773,8 @@ function SolveSidebar({ currentProblemId }) {
               onSubmitRename={handleRename}
               onCancelRename={() => handleCancelCreate(rootItem.id)}
               onSubmitCreate={handleCreateItem}
+              collapsedFolders={collapsedFolders}
+              onToggleCollapse={toggleFolderCollapse}
             />
             {rootItem.type === 'FOLDER' && index < fileTree.length - 1 && (
               <div className={styles.divider} />
@@ -761,7 +798,7 @@ function SolveSidebar({ currentProblemId }) {
               </div>
             )}
             <button
-              className={styles.collapseButton}
+              className={styles.sideBarCollapseButton}
               title={isExpanded ? '사이드바 접기' : '사이드바 펼치기'}
               onClick={toggleSidebar}
             >
