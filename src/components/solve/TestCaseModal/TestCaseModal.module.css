@@ -180,7 +180,7 @@
 
 
 /* AI 생성 중 차단 오버레이 */
-.blockingBackdrop{
+.blocking-backdrop{
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.08);
@@ -190,7 +190,7 @@
   z-index: 1000;          
 }
 
-.blockingBox{
+.blocking-box{
   width: 400px;
   height: 148px;
   background: #fff;
@@ -206,13 +206,13 @@
   padding: 20px;
 }
 
-.blockingTitle{
+.blocking-title{
   font-size: 20px;
   font-weight: 700;
   text-align: center;
 }
 
-.blockingSpinner{
+.blocking-spinner{
   width: 36px;
   height: 36px;
   border: 3px solid #ddd;

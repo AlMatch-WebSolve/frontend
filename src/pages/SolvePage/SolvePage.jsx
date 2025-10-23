@@ -4,7 +4,6 @@ import SolveSidebar from '../../components/solve/SolveSidebar/SolveSidebar';
 import CodingPanel from '../../components/solve/CodingPanel/CodingPanel';
 import ResultPanel from '../../components/solve/ResultPanel/ResultPanel';
 import ProblemPanel from '../../components/problems/ProblemPanel/ProblemPanel';
-import ConfirmModal from '../../components/common/ConfirmModal/ConfirmModal';
 import styles from './SolvePage.module.css';
 import apiClient from '../../api/apiClient';
 import TestCaseModal from '../../components/solve/TestCaseModal/TestCaseModal';
@@ -17,7 +16,6 @@ function SolvePage() {
   const [submitRan, setSubmitRan] = useState(false);
   const [submitResult, setSubmitResult] = useState({ url: '' });
   const [resultActiveTab, setResultActiveTab] = useState('test');
-  const [showSubmitFirst, setShowSubmitFirst] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState(null);
@@ -153,7 +151,6 @@ function SolvePage() {
           fileName={solution?.fileName}
           onAfterSubmit={handleAfterSubmit}
           hasSubmitted={submitRan}
-          onRequireSubmit={() => setShowSubmitFirst(true)}
           onTest={(code, lang) => handleRunTests(code, lang, numericSolutionId)}
         />
         {codingTab === 'code' ? (
@@ -163,7 +160,6 @@ function SolvePage() {
             submitRan={submitRan}
             submitResult={submitResult}
             activeTab={resultActiveTab}
-            onGoAiReview={() => setCodingTab('review')}
             onOpenTestCaseModal={openTestCaseModal}
           />
         ) : null}
@@ -174,14 +170,6 @@ function SolvePage() {
           </>
         )}
       </div>
-
-      <ConfirmModal
-        open={showSubmitFirst}
-        lines={['AI 코드 리뷰를 보려면 먼저 코드를 제출해 주세요.']}
-        onCancel={() => setShowSubmitFirst(false)}
-        onConfirm={() => setShowSubmitFirst(false)}
-        onClose={() => setShowSubmitFirst(false)}
-      />
     </div>
   );
 }

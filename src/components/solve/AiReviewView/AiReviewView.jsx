@@ -59,11 +59,9 @@ function AiReviewView({ solutionId, active = false }) {
 
   return (
     <div className={styles.container}>
-      {loading && <div>분석 중…</div>}
-
       {/* strengths */}
       <div className={styles.block} aria-labelledby="good-title">
-        <p id="good-title" className={styles.blockTitle}>장점</p>
+        <p id="good-title" className={styles.blockTitle}>강점</p>
         {review?.strengths?.length ? (
           <ul className={styles.list}>
             {review.strengths.map((s, i) => (
@@ -71,7 +69,7 @@ function AiReviewView({ solutionId, active = false }) {
             ))}
           </ul>
         ) : (
-          <p className={styles.muted}>강점이 아직 없어요.</p>
+          <p className={styles.muted}>강점 분석 중...</p>
         )}
       </div>
 
@@ -85,7 +83,7 @@ function AiReviewView({ solutionId, active = false }) {
             ))}
           </ul>
         ) : (
-          <p className={styles.muted}>제안할 개선 아이디어가 없어요.</p>
+          <p className={styles.muted}>개선 아이디어 제안 중...</p>
         )}
       </div>
 
@@ -99,7 +97,7 @@ function AiReviewView({ solutionId, active = false }) {
             ))}
           </ul>
         ) : (
-          <p className={styles.muted}>근거 데이터가 없어요.</p>
+          <p className={styles.muted}>근거 데이터 수집 중...</p>
         )}
       </div>
 
@@ -108,7 +106,9 @@ function AiReviewView({ solutionId, active = false }) {
       <div className={styles.block} aria-labelledby="patch-title">
         <p id="patch-title" className={styles.blockTitle}>수정안</p>
 
-        {review?.patch ? (
+        {loading ? (
+          <p className={styles.muted}>수정사항 확인 중...</p>
+        ) : review?.patch ? (
           <div className={styles.patchItem} role="group" aria-labelledby="patch-title">
             <p className={styles.label}>현재 코드</p>
             <pre className={styles.codeBox}>
@@ -121,10 +121,21 @@ function AiReviewView({ solutionId, active = false }) {
             </pre>
           </div>
         ) : (
-          <p className={styles.muted}>제안된 패치가 없어요.</p>
+          <p className={styles.muted}>
+            권장 수정 사항 없음.
+          </p>
         )}
       </div>
 
+      {/* AI 생성 중 차단 오버레이 */}
+      {loading && (
+        <div className={styles.blockingBackdrop} role="dialog" aria-modal="true" aria-labelledby="ai-blocking-title">
+          <div className={styles.blockingBox}>
+            <div id="ai-blocking-title" className={styles.blockingTitle}>AI 코드 리뷰 생성 중…</div>
+            <div className={styles.blockingSpinner} aria-hidden="true" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
