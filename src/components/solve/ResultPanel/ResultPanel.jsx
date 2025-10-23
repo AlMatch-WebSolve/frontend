@@ -10,7 +10,6 @@ function ResultPanel({
   submitRan = false,
   submitResult = {},
   activeTab = 'test',
-  onGoAiReview,
   onOpenTestCaseModal = () => { }
 }) {
   const [tab, setTab] = useState('test');
@@ -59,7 +58,6 @@ function ResultPanel({
             <SubmissionResult
               ran={submitRan}
               url={submitResult?.url}
-              onGoAiReview={onGoAiReview}
             />
           </section>
         )}

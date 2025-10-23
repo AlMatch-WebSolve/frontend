@@ -75,3 +75,46 @@
 
 .muted { color: #666666; }
 
+/* AI 생성 중 차단 오버레이 */
+.blocking-backdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.08);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;          
+}
+
+.blocking-box{
+  width: 400px;
+  height: 148px;
+  background: #fff;
+  border: 1px solid #000000;
+  border-radius: 5px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+}
+
+.blocking-title{
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.blocking-spinner{
+  width: 36px;
+  height: 36px;
+  border: 3px solid #ddd;
+  border-top-color: #4397f3;
+  border-radius: 50%;
+  animation: spin 0.85s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }

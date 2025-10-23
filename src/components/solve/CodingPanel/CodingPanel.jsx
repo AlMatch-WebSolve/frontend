@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import CodeEditor from '../CodeEditor/CodeEditor';
 import AiReviewView from '../AiReviewView/AiReviewView';
 import Button from '../../common/Button';
@@ -47,11 +47,17 @@ function CodingPanel({
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [saveMessage, setSaveMessage] = useState('코드가 저장되었습니다.');
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [reviewMessage, setReviewMessage] = useState('먼저 코드를 제출해주세요.');
+  const [reviewMessage, setReviewMessage] = useState('코드를 작성하거나 제출 후 이용해 주세요.');
 
   // 제출
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [submitLink, setSubmitLink] = useState('');
+
+  // 리뷰 탭 접근
+  const canAccessReview = React.useMemo(() => {
+    const hasCode = (code ?? '').trim().length > 0;
+    return hasCode || hasSubmitted;
+  }, [code, hasSubmitted]);
 
   // 탭 변경 통지
   useEffect(() => {
@@ -240,14 +246,15 @@ function CodingPanel({
             aria-selected={tab === 'review'}
             aria-controls="panel-review"
             id="tab-review"
-            aria-disabled={!hasSubmitted}
+            aria-disabled={!canAccessReview}
             className={styles.tabBtn}
-            onClick={() => {
-              if (!hasSubmitted) {
-                setReviewMessage('먼저 코드를 제출해주세요.');
+            onClick={async () => {
+              if (!canAccessReview) {
+                setReviewMessage('코드를 작성하거나 제출 후 이용해 주세요.');
                 setShowReviewModal(true);
                 return;
               }
+              await saveWith(code, { toast: false });
               setTab('review');
               onTabChange?.('review');
             }}
