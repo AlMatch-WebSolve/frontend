@@ -21,7 +21,6 @@
 }
 
 .collapse-icon {
-.collapse-icon {
   width: 30px;
   height: 30px;
   display: block;
@@ -52,7 +51,6 @@
 
 .folder-name-display {
   white-space: nowrap;
-  overflow: hidden; /* 이름이 길 경우 필요 */
   overflow: hidden; /* 이름이 길 경우 필요 */
   text-overflow: ellipsis;
   /* 기존 이름 텍스트 스타일 */
@@ -108,10 +106,8 @@
 }
 
 /* .dots-button:disabled {
-/* .dots-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-} */
 } */
 
 /* 점 세개 아이콘 크기 */
