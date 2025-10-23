@@ -56,6 +56,20 @@ function WorkspacePage() {
   const [selectedFolderId, setSelectedFolderId] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const [collapsedFolders, setCollapsedFolders] = useState(new Set());
+
+  const toggleFolderCollapse = useCallback((folderId) => {
+    setCollapsedFolders((prev) => {
+      const next = new Set(prev);
+      if (next.has(folderId)) {
+        next.delete(folderId); // 이미 있으면 제거 (펼치기)
+      } else {
+        next.add(folderId); // 없으면 추가 (접기)
+      }
+      return next;
+    });
+  }, []);
+
   const toUnified = (foldersArg = folders, problemsArg = problems) => {
     // 1. 폴더와 문제를 합칩니다.
     const allItems = [
@@ -132,6 +146,7 @@ function WorkspacePage() {
     }
     return false;
   };
+
   const isFolderDescendantId = (childFolderId, ancestorFolderId) => {
     if (!childFolderId || !ancestorFolderId) return false;
     let cur = folderMap.get(childFolderId)?.parentId ?? null;
@@ -141,6 +156,22 @@ function WorkspacePage() {
     }
     return false;
   };
+
+  const isAncestorCollapsed = useCallback(
+    (item) => {
+      let currentParentId =
+        item._kind === 'folder' ? item.parentId : item.folderId;
+      while (currentParentId != null) {
+        if (collapsedFolders.has(currentParentId)) {
+          return true; // 조상 중 하나라도 접혀있으면 true
+        }
+        // 다음 부모로 이동
+        currentParentId = folderMap.get(currentParentId)?.parentId ?? null;
+      }
+      return false; // 루트까지 갔는데 접힌 조상이 없으면 false
+    },
+    [collapsedFolders, folderMap],
+  );
 
   // 트리
   const buildFlatFromTree = useCallback(
@@ -592,10 +623,17 @@ const handleNewFolder = () => {
           ) : unified.length > 0 ? (
             <ul className={styles.folderList}>
               {unified.map((item) => {
+                // 1. 이 항목의 조상 중 접힌 폴더가 있는지 확인
+                if (isAncestorCollapsed(item)) {
+                  return null; // 접힌 폴더의 자손이면 렌더링하지 않음
+                }
+
+                // 2. 렌더링 (기존 로직과 거의 동일)
                 const depth =
                   item._kind === 'folder'
                     ? getFolderDepth(item.id)
                     : getProblemDepth(item);
+                const isCollapsed = collapsedFolders.has(item.id);
 
                 if (item._kind === 'folder') {
                   return (
@@ -608,12 +646,13 @@ const handleNewFolder = () => {
                         <div
                           className={styles.indented}
                           style={{ '--depth': String(depth) }}
-                          onClick={() => setSelectedFolderId(item.id)}
                         >
                           <WorkSpaceFolderItem
                             id={item.id}
                             initialName={item.name}
                             isInitialEditing={item.isEditing}
+                            isCollapsed={isCollapsed}
+                            onToggleCollapse={toggleFolderCollapse}
                             onNameConfirm={(newName) =>
                               handleFolderNameConfirm(item.id, newName)
                             }
@@ -634,7 +673,7 @@ const handleNewFolder = () => {
                   >
                     <div className={styles.rowContent}>
                       <div
-                        className={styles.indented}
+                        className={`${styles.indented} ${styles.indentedFile}`}
                         style={{ '--depth': String(depth) }}
                       >
                         <WorkSpaceProblemList
