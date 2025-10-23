@@ -528,33 +528,33 @@ function WorkspacePage() {
     })();
   };
 
-// 생성
-const handleNewFolder = () => {
-  const parentId = selectedFolderId ?? null; // 숫자 또는 null
-  const now = Date.now();
-  const tempId = `temp-folder-${now}`;
-  
-  const siblingFolders = folders.filter(item => 
-    item.parentId === parentId
-  );
-  const newOrder = siblingFolders.length > 0 
-    ? Math.max(...siblingFolders.map(i => i.order || 0)) + 1 
-    : 0;
-  
-  // 화면에만 보이는 드래프트 추가
-  setFolders(prev => [
-    ...prev,
-    {
-      id: tempId,
-      name: '새 폴더',
-      parentId,
-      isEditing: true,
-      createdAt: now,
-      order: newOrder,
-      _kind: 'folder',
-    },
-  ]);
-};
+  // 생성
+  const handleNewFolder = () => {
+    const parentId = selectedFolderId ?? null; // 숫자 또는 null
+    const now = Date.now();
+    const tempId = `temp-folder-${now}`;
+
+    const siblingFolders = folders.filter(item =>
+      item.parentId === parentId
+    );
+    const newOrder = siblingFolders.length > 0
+      ? Math.max(...siblingFolders.map(i => i.order || 0)) + 1
+      : 0;
+
+    // 화면에만 보이는 드래프트 추가
+    setFolders(prev => [
+      ...prev,
+      {
+        id: tempId,
+        name: '새 폴더',
+        parentId,
+        isEditing: true,
+        createdAt: now,
+        order: newOrder,
+        _kind: 'folder',
+      },
+    ]);
+  };
 
   const handleNewProblem = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
