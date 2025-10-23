@@ -136,6 +136,9 @@
   border: 1px solid #999999;
   border-radius: 5px;
   overflow: auto;
+}
+
+code {
   font-size: 18px;
-  /* font-family: 'Red Hat Mono', 'D2Coding', ui-monospace, SFMono-Regular, Menlo, Consolas,'Liberation Mono', monospace; */
+  font-family: 'Red Hat Mono', 'D2Coding', ui-monospace, SFMono-Regular, Menlo, Consolas,'Liberation Mono', monospace;
 }
